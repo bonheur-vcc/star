@@ -118,10 +118,10 @@
       flex-direction: column;
       align-items: center;
       gap: 7px;
-      pointer-events: none;
+      pointer-events: auto;
     }
     #progress-bar-track {
-      width: 3px;
+      width: 10px;
       height: 155px;
       background: rgba(255, 255, 255, 0.04);
       border-radius: 2px;
@@ -146,26 +146,28 @@
       writing-mode: vertical-rl;
     }
     
-    #morph-slider {
+  #morph-slider {
   position: absolute;
   top: 0;
   left: 0;
-  width: 155px;          /* 滑块轨道长度（与进度条高度一致） */
-  height: 3px;           /* 轨道宽度 */
-  transform-origin: left top;
-  transform: rotate(-90deg) translateX(-155px);
+  width: 10px;              /* 与进度条宽度保持一致 */
+  height: 155px;            /* 与进度条高度保持一致 */
   -webkit-appearance: none;
   background: transparent;
   cursor: pointer;
   z-index: 10;
+  writing-mode: vertical-lr; /* 让滑块从垂直方向拖动（从上到下） */
+  direction: rtl;            /* 反转滑动方向，使向上=数值增大 */
 }
 #morph-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 14px;
-  height: 14px;
-  background: rgba(255,255,255,0.9);
+  width: 20px;
+  height: 20px;
+  background: rgba(255,255,255,0.95);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--accent);
+  box-shadow: 0 0 14px var(--accent);
+  margin-top: -10px;        /* 让拇指垂直居中 */
+  margin-left: -5px;        /* 让拇指水平居中（滑块宽度10px，拇指20px，偏移一半） */
 }
 
     /* 底部面板 */
@@ -344,7 +346,7 @@
       }
       #progress-bar-track {
         height: 110px;
-        width: 2px;
+        width: 10px;
       }
       .text-card {
         padding: 20px;
@@ -353,13 +355,15 @@
         font-size: 16px;
       }
             #morph-slider {
-        width: 110px;
-        transform: rotate(-90deg) translateX(-110px);
-      }
-      #morph-slider::-webkit-slider-thumb {
-        width: 20px;
-        height: 20px;
-      }
+  width: 10px;
+  height: 110px;
+}
+#morph-slider::-webkit-slider-thumb {
+  width: 28px;
+  height: 28px;
+  margin-top: -14px;
+  margin-left: -9px;
+}
     }
     @media (max-width: 480px) {
       .shape-btn {
