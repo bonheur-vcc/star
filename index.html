@@ -145,6 +145,28 @@
       letter-spacing: 0.07em;
       writing-mode: vertical-rl;
     }
+    
+    #morph-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 155px;          /* 滑块轨道长度（与进度条高度一致） */
+  height: 3px;           /* 轨道宽度 */
+  transform-origin: left top;
+  transform: rotate(-90deg) translateX(-155px);
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 10;
+}
+#morph-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--accent);
+}
 
     /* 底部面板 */
     #panel {
@@ -330,6 +352,14 @@
       #custom-text {
         font-size: 16px;
       }
+            #morph-slider {
+        width: 110px;
+        transform: rotate(-90deg) translateX(-110px);
+      }
+      #morph-slider::-webkit-slider-thumb {
+        width: 20px;
+        height: 20px;
+      }
     }
     @media (max-width: 480px) {
       .shape-btn {
@@ -354,9 +384,14 @@
   <!-- 散开/汇聚进度指示器 -->
   <div id="progress-indicator">
     <span class="progress-label">汇聚</span>
-    <div id="progress-bar-track"><div id="progress-bar-fill" style="height:60%;"></div></div>
-    <span class="progress-label">散开</span>
+    <div id="progress-bar-track">
+  <div id="progress-bar-fill" style="height:60%;"></div>
+      <input type="range" id="morph-slider" min="0" max="100" value="60" step="1">
   </div>
+  <span class="progress-label">散开</span>
+</div>
+
+<!-- 自定义文字输入弹窗 -->
 
   <!-- 自定义文字输入弹窗 -->
   <div id="text-overlay">
@@ -828,6 +863,12 @@ for (let i = 0; i < 16; i++) {
       camera.lookAt(0, 0, 0);
     }
     updCam();
+    let lastPinchY = 0;
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  targetMorph = Math.max(0, Math.min(1, targetMorph + (e.deltaY > 0 ? -0.04 : 0.04)));
+}, { passive: false });
+
 renderer.domElement.addEventListener('touchmove', e => {
      if (e.touches.length === 2) {
     // 双指上下滑动 → 改变汇聚/散开程度
@@ -875,14 +916,17 @@ renderer.domElement.addEventListener('touchmove', e => {
     renderer.domElement.addEventListener('touchstart', e => {
       if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY);
     }, { passive: false });
-    renderer.domElement.addEventListener('touchmove', e => {
-      if (drag && e.touches.length === 1) { e.preventDefault();
-        moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
-    }, { passive: false });
     renderer.domElement.addEventListener('touchend', () => {
   	if (drag) { /* 原有 endDrag 逻辑保持不变 */ }
  	 lastPinchY = 0;
     });
+
+    // 滑块控制汇聚/散开
+document.getElementById('morph-slider').addEventListener('input', e => {
+  targetMorph = parseInt(e.target.value) / 100;
+  const hint = document.getElementById('hint-overlay');
+  if (hint && !hint.classList.contains('fading')) hint.classList.add('fading');
+});
 
     // 形状按钮
     document.querySelectorAll('.shape-btn[data-shape]').forEach(b => b.addEventListener('click', () => {
@@ -927,7 +971,7 @@ renderer.domElement.addEventListener('touchmove', e => {
       // 动态调整字号，确保每一行的宽度都不超过画布
       while (lines.some(line => ctx.measureText(line).width > maxW) && fs > 30) {
         fs -= 10;
-        ctx.font = `${fs}px "STXingkai","KaiTi","楷体",cursive`;
+        ctx.font = `${fs}px ${fontFamily}`;
       }
 
       // 如果行数较多，也检查总高度
@@ -1021,7 +1065,7 @@ renderer.domElement.addEventListener('touchmove', e => {
 
     // ==================== 动画循环 ====================
     const clock = new THREE.Clock();
-    let lastPinchY = 0;
+    
     function animate() {
       requestAnimationFrame(animate);
       const dt = Math.min(clock.getDelta(), 0.1);
@@ -1111,10 +1155,13 @@ const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 1.5 : 1.0;
       theta += (tTheta - theta) * 0.12;
       phi += (tPhi - phi) * 0.12;
       updCam();
-
       // 更新进度条
       document.getElementById('progress-bar-fill').style.height = (morph * 100) + '%';
-
+// 同步滑块值（避免拖拽时被覆盖）
+const slider = document.getElementById('morph-slider');
+if (slider && document.activeElement !== slider) {
+  slider.value = Math.round(morph * 100);
+}
       // 动态 Bloom 强度
       bloom.strength = 0.3 + (1 - mp) * 1.2;
 
