@@ -412,9 +412,9 @@
 
     // ==================== 粒子配置 ====================
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const MAIN = isMobile ? 25000 : 60000;   // 主粒子
-    const MID  = isMobile ? 8000  : 20000;   // 中层粒子
-    const BG   = isMobile ? 3000  : 8000;    // 背景星空
+    const MAIN = isMobile ? 35000 : 100000;   // 主粒子
+    const MID  = isMobile ? 12000  : 35000;   // 中层粒子
+    const BG   = isMobile ? 30000  : 50000;    // 背景星空
     const RADIUS = 7.0;
     const SHAPE_SCALE = 3.5;
 
@@ -457,7 +457,7 @@
       ctx.fillRect(0, 0, s, s);
       return new THREE.CanvasTexture(c);
     }
-    const texMain = makeTex(128, 'rgba(255,255,255,1)', 'rgba(255,210,130,0.8)');
+    const texMain = makeTex(128, 'rgba(255,255,255,0.7)', 'rgba(255,180,100,0.5)');
     const texMid  = makeTex(64,  'rgba(255,255,250,1)', 'rgba(180,140,220,0.5)');
 
     // ==================== 银河分布 ====================
@@ -768,7 +768,7 @@ for (let i = 0; i < 16; i++) {
       };
     }
 
-    const main = createSystem(MAIN, galaxyPositions(MAIN, RADIUS), texMain, 0.05, 0.95);
+    const main = createSystem(MAIN, galaxyPositions(MAIN, RADIUS), texMain, 0.05, 0.7);
     const mid  = createSystem(MID,  galaxyPositions(MID,  RADIUS * 0.9), texMid, 0.03, 0.75);
     const bg   = createSystem(BG,   galaxyPositions(BG,   RADIUS * 1.6), null,    0.015, 0.4);
 
@@ -1008,7 +1008,7 @@ for (let i = 0; i < 16; i++) {
       const dt = Math.min(clock.getDelta(), 0.1);
 
       // 形态过渡（散开 ↔ 汇聚）
-      morph += (targetMorph - morph) * 0.03;
+      morph += (targetMorph - morph) * 0.015;
 
       // 形状切换过渡
       if (trans < 1) {
@@ -1027,7 +1027,7 @@ for (let i = 0; i < 16; i++) {
       const mp = morph;
 
      // 膨胀因子：mp<0.7 时形状先膨胀 0~80%
-const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 0.8 : 1.0;
+const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 1.5 : 1.0;
 
       for (let i = 0; i < MAIN; i++) {
   	const i3 = i * 3;
@@ -1069,8 +1069,8 @@ const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 0.8 : 1.0;
       mid.geom.attributes.color.needsUpdate = true;
 
       // 动态调整粒子大小和辉光
-      main.mat.size = 0.04 + mp * 0.06;
-      mid.mat.size = 0.02 + mp * 0.04;
+      main.mat.size = 0.04 + mp * 0.10;
+      mid.mat.size = 0.02 + mp * 0.06;
       bg.points.rotation.y += dt * 0.05;
       mainGrp.rotation.y += (1 - mp) * 0.16 * dt;
       midGrp.rotation.y += (1 - mp) * 0.13 * dt;
@@ -1096,7 +1096,7 @@ const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 0.8 : 1.0;
       document.getElementById('progress-bar-fill').style.height = (morph * 100) + '%';
 
       // 动态 Bloom 强度
-      bloom.strength = 0.85 + (1 - mp) * 0.8;
+      bloom.strength = 0.3 + (1 - mp) * 1.2;
 
       composer.render();
     }
