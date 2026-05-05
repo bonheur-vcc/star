@@ -1,1116 +1,2126 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>星尘 · 极致银河与灵兽 | 行书文字</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>红楼三境 · RMTI / 风月宝鉴 / 太虚幻境</title>
   <style>
     :root {
-      --bg: #000312;
-      --panel-bg: rgba(8, 6, 22, 0.82);
-      --text: #e0daf5;
-      --accent: #f5b042;
-      --btn-bg: rgba(20, 16, 42, 0.7);
-      --btn-hover: rgba(36, 28, 64, 0.88);
-      --btn-active: rgba(88, 50, 155, 0.82);
-      --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui;
+      --ink: #24170f;
+      --muted: #715f4c;
+      --paper: rgba(255, 250, 239, 0.92);
+      --paper-solid: #fffaf0;
+      --line: rgba(142, 105, 55, 0.36);
+      --gold: #c8a35a;
+      --gold-deep: #9d7431;
+      --red: #8b2c2c;
+      --red-soft: #b24a43;
+      --jade: #809878;
+      --shadow: 0 22px 80px rgba(38, 18, 8, 0.28);
+      --song: "Noto Serif SC", "Songti SC", "STSong", "SimSun", "KaiTi", serif;
+      --title: "ZCOOL XiaoWei", "Noto Serif SC", "STKaiti", "KaiTi", serif;
     }
-    * {
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: #17110d; color: var(--ink); font-family: var(--song); }
+    body { overflow-x: hidden; }
+    button, input { font: inherit; }
+    .app-root { min-height: 100vh; background: #17110d; }
+    .home-view {
+      min-height: 100svh;
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(31, 17, 10, 0.78) 0%, rgba(31, 17, 10, 0.18) 28%, rgba(31, 17, 10, 0.2) 72%, rgba(31, 17, 10, 0.62) 100%),
+        linear-gradient(180deg, rgba(255, 250, 235, 0.05), rgba(30, 18, 9, 0.68)),
+        url("RMTI.png") center / cover no-repeat;
+    }
+    .home-view::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 52% 50%, transparent 0 36%, rgba(38, 18, 8, 0.22) 62%, rgba(22, 12, 7, 0.6) 100%),
+        url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 62c18-28 42-28 60 0s36 28 54 0' fill='none' stroke='%23b08a4d' stroke-opacity='.12' stroke-width='1'/%3E%3C/svg%3E");
+    }
+    .home-panel {
+      position: relative;
+      z-index: 2;
+      min-height: 100svh;
+      display: grid;
+      grid-template-columns: minmax(220px, 360px) 1fr;
+      gap: 24px;
+      padding: clamp(18px, 4vw, 54px);
+      align-items: stretch;
+    }
+    .home-copy {
+      align-self: center;
+      max-width: 360px;
+      color: #f7eddb;
+      text-shadow: 0 2px 16px rgba(0,0,0,0.5);
+    }
+    .home-copy h1 {
       margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      background: var(--bg);
-      overflow: hidden;
-      font-family: var(--font);
-      height: 100vh;
-      width: 100vw;
-      user-select: none;
-      cursor: grab;
-    }
-    body:active {
-      cursor: grabbing;
-    }
-    body.dragging {
-      cursor: grabbing;
-    }
-    canvas {
-      display: block;
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: auto;
-    }
-
-    /* 提示覆盖层 */
-    #hint-overlay {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 120;
-      text-align: center;
-      pointer-events: none;
-      transition: opacity 1s;
-      opacity: 1;
-    }
-    #hint-overlay.fading {
-      opacity: 0;
-      transition: opacity 1.5s;
-    }
-    .hint-ring {
-      width: 54px;
-      height: 54px;
-      border: 2px solid rgba(190, 180, 240, 0.45);
-      border-radius: 50%;
-      margin: 0 auto 16px;
-      position: relative;
-      animation: pulse 2.5s infinite;
-    }
-    .hint-ring::after {
-      content: '';
-      position: absolute;
-      top: 7px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 6px;
-      height: 13px;
-      background: rgba(225, 215, 255, 0.85);
-      border-radius: 4px;
-      animation: dot 2.5s infinite;
-    }
-    @keyframes pulse {
-      0%,
-      100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.1);
-      }
-    }
-    @keyframes dot {
-      0%,
-      100% {
-        top: 7px;
-        opacity: 0.6;
-      }
-      50% {
-        top: 30px;
-        opacity: 1;
-      }
-    }
-    .hint-text {
-      color: rgba(215, 208, 240, 0.82);
-      font-size: 13px;
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 28px rgba(145, 125, 220, 0.55);
-    }
-
-    /* 进度指示器 */
-    #progress-indicator {
-      position: fixed;
-      right: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 7px;
-      pointer-events: none;
-    }
-    #progress-bar-track {
-      width: 3px;
-      height: 155px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 2px;
-      position: relative;
-      overflow: hidden;
-      box-shadow: inset 0 0 14px rgba(0, 0, 0, 0.5);
-    }
-    #progress-bar-fill {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, #f5b042, #f07b4e, #c886f0, #6d8cf8);
-      border-radius: 2px;
-      transition: height 0.22s;
-      box-shadow: 0 0 16px rgba(175, 130, 225, 0.65);
-    }
-    .progress-label {
-      color: rgba(200, 188, 230, 0.5);
-      font-size: 9px;
-      letter-spacing: 0.07em;
+      font-family: var(--title);
+      font-size: clamp(2.4rem, 7vw, 5.8rem);
+      line-height: 0.96;
+      letter-spacing: 0.08em;
       writing-mode: vertical-rl;
+      max-height: 72svh;
     }
-
-    /* 底部面板 */
-    #panel {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 130;
-      background: var(--panel-bg);
-      backdrop-filter: blur(26px);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 9px 0 14px;
-      transition: transform 0.42s;
-      box-shadow: 0 -10px 38px rgba(0, 0, 0, 0.55);
+    .home-copy p {
+      margin: 22px 0 0;
+      max-width: 19rem;
+      color: rgba(255, 245, 224, 0.86);
+      line-height: 1.9;
+      letter-spacing: 0.08em;
+      font-size: clamp(0.82rem, 1.4vw, 0.98rem);
     }
-    #panel.collapsed {
-      transform: translateY(calc(100% - 36px));
-    }
-    #panel-toggle {
+    .home-stage { position: relative; min-height: 560px; }
+    .hotspot {
       position: absolute;
-      top: -26px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 48px;
-      height: 22px;
-      background: var(--panel-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-bottom: none;
-      border-radius: 13px 13px 0 0;
+      appearance: none;
+      border: 0;
+      background: transparent;
+      padding: 0;
       cursor: pointer;
-      z-index: 131;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(26px);
+      color: #f8ead0;
+      filter: drop-shadow(0 16px 22px rgba(28, 12, 5, 0.38));
+      transition: transform 0.28s ease, filter 0.28s ease;
     }
-    #panel-toggle span {
+    .hotspot:hover, .hotspot:focus-visible { transform: translateY(-6px) scale(1.03); filter: drop-shadow(0 18px 28px rgba(80, 28, 16, 0.48)); outline: none; }
+    .hotspot img { display: block; width: min(24vw, 230px); max-width: 100%; height: auto; }
+    .hotspot span {
       display: block;
-      width: 17px;
-      height: 2px;
-      background: rgba(200, 190, 230, 0.7);
-      border-radius: 1px;
-      transition: transform 0.35s;
+      margin-top: -12px;
+      padding: 8px 12px;
+      background: rgba(42, 20, 10, 0.72);
+      border: 1px solid rgba(218, 179, 99, 0.45);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.22);
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.14em;
+      font-size: 0.88rem;
+      text-align: center;
+      white-space: nowrap;
     }
-    #panel.collapsed #panel-toggle span {
-      transform: rotate(180deg);
+    .hotspot.rmti { left: 0%; bottom: 6%; }
+    .hotspot.mirror { right: 13%; top: 20%; }
+    .hotspot.paradox { left: 39%; top: 31%; }
+    .home-note {
+      position: absolute;
+      right: 0;
+      bottom: 2.5rem;
+      z-index: 2;
+      max-width: 360px;
+      padding: 18px 20px;
+      color: rgba(255, 244, 222, 0.9);
+      background: linear-gradient(135deg, rgba(48, 24, 12, 0.72), rgba(80, 36, 24, 0.48));
+      border: 1px solid rgba(219, 181, 105, 0.38);
+      line-height: 1.8;
+      letter-spacing: 0.07em;
+      box-shadow: 0 18px 60px rgba(20, 10, 6, 0.28);
+      backdrop-filter: blur(12px);
     }
-    #panel-inner {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      justify-content: center;
-      padding: 0 14px;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    .shape-btn {
-      padding: 7px 14px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: var(--btn-bg);
-      color: var(--text);
+    .view-shell { display: none; min-height: 100svh; position: relative; background: #efe3ce; }
+    .view-shell.active { display: block; }
+    .back-home {
+      position: fixed;
+      z-index: 1000;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(12px, env(safe-area-inset-left));
+      border: 1px solid rgba(203, 166, 90, 0.55);
+      background: rgba(35, 18, 10, 0.62);
+      color: #f7e8c9;
+      border-radius: 999px;
+      padding: 9px 15px;
       cursor: pointer;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      transition: all 0.3s;
+      letter-spacing: 0.08em;
       backdrop-filter: blur(10px);
+      box-shadow: 0 10px 34px rgba(0,0,0,0.18);
     }
-    .shape-btn:hover {
-      background: var(--btn-hover);
-      border-color: rgba(255, 255, 255, 0.4);
-      color: #fff;
-      box-shadow: 0 0 26px rgba(115, 85, 195, 0.45);
-      transform: translateY(-3px);
-    }
-    .shape-btn.active {
-      background: var(--btn-active);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 0 30px rgba(220, 150, 50, 0.55);
-      font-weight: 600;
-    }
-    .custom-btn {
-      background: rgba(30, 20, 55, 0.75);
-      border-color: rgba(180, 150, 220, 0.3);
+    .back-home:hover { background: rgba(55, 27, 15, 0.78); }
+    .loading-state, .error-state {
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #f7e8d0;
+      background: radial-gradient(circle at 50% 30%, #53342b, #16100e 70%);
+      text-align: center;
+      letter-spacing: 0.08em;
+      line-height: 1.8;
     }
 
-    /* 文字输入覆盖层 */
-    #text-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .rmti-app {
+      min-height: 100svh;
+      padding: 54px 14px 26px;
+      background:
+        linear-gradient(rgba(239, 226, 204, 0.76), rgba(239, 226, 204, 0.78)),
+        url("RMTI.png") center / cover fixed no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      line-height: 1.8;
+      letter-spacing: 0.04em;
+    }
+    .rmti-container {
+      width: min(880px, 100%);
+      background: rgba(255, 251, 241, 0.94);
+      border: 1px solid rgba(156, 118, 65, 0.38);
+      box-shadow: var(--shadow), inset 0 0 0 8px rgba(196, 154, 82, 0.05);
+      padding: clamp(20px, 4vw, 42px);
+      position: relative;
+      overflow: hidden;
+    }
+    .rmti-container::before, .rmti-container::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border: 1px solid rgba(166, 124, 46, 0.18);
+      pointer-events: none;
+    }
+    .rmti-container::after { inset: 18px; border-style: dotted; }
+    .rmti-content { position: relative; z-index: 1; }
+    .rmti-header { text-align: center; margin-bottom: 28px; }
+    .rmti-seal, .rmti-badge {
+      display: inline-block;
+      border: 2px solid var(--red);
+      color: var(--red);
+      font-family: var(--title);
+      padding: 3px 14px;
+      letter-spacing: 0.16em;
+      background: rgba(255, 244, 225, 0.58);
+      transform: rotate(-2deg);
+    }
+    .rmti-header h2, .rmti-header h1 {
+      margin: 8px 0 4px;
+      font-family: var(--title);
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      letter-spacing: 0.1em;
+      color: var(--ink);
+    }
+    .rmti-subtitle { color: var(--muted); font-style: italic; margin: 0; }
+    .rmti-poem, .poem-block {
+      background: linear-gradient(135deg, rgba(255, 250, 240, 0.82), rgba(247, 232, 205, 0.72));
+      border: 1px dashed rgba(160, 124, 74, 0.55);
+      color: var(--red-soft);
+      padding: 14px 18px;
+      margin: 18px auto;
+      max-width: 620px;
+      text-align: center;
+      font-family: var(--title);
+    }
+    .rmti-btn, .rmti-app .btn {
+      appearance: none;
+      border: 1px solid rgba(160, 124, 74, 0.45);
+      border-radius: 999px;
+      padding: 11px 24px;
+      background: rgba(255, 252, 245, 0.86);
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      white-space: nowrap;
+    }
+    .rmti-btn:hover, .rmti-app .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(93, 50, 18, 0.12); }
+    .rmti-btn.primary, .rmti-app .btn.primary {
+      background: linear-gradient(135deg, #a53d38, #842827);
+      border-color: #842827;
+      color: #fff9ec;
+      letter-spacing: 0.12em;
+    }
+    .rmti-progress { margin-bottom: 20px; }
+    .rmti-progress-track { height: 5px; background: #e1d1b8; border-radius: 999px; overflow: hidden; }
+    .rmti-progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #9a2f2d, #c6a251); transition: width 0.35s ease; }
+    .rmti-progress-text { text-align: right; color: var(--muted); font-size: 0.78rem; margin-top: 5px; }
+    .rmti-question-card {
+      position: relative;
+      min-height: 246px;
+      padding: clamp(18px, 4vw, 30px);
+      border: 1px solid rgba(159, 124, 75, 0.36);
+      background:
+        linear-gradient(rgba(255, 251, 240, 0.86), rgba(255, 249, 236, 0.9)),
+        radial-gradient(circle at 18% 20%, rgba(179, 68, 63, 0.13), transparent 32%),
+        radial-gradient(circle at 88% 78%, rgba(128, 152, 120, 0.16), transparent 34%),
+        url("assets/vase-patterns.png") center / cover;
+      box-shadow: inset 0 0 0 8px rgba(255,255,255,0.34);
+      overflow: hidden;
+    }
+    .rmti-question-card::before {
+      content: attr(data-chapter);
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      color: rgba(139, 44, 44, 0.22);
+      font-family: var(--title);
+      font-size: clamp(2.2rem, 10vw, 4.8rem);
+      writing-mode: vertical-rl;
+      pointer-events: none;
+    }
+    .rmti-scene { color: var(--gold-deep); font-family: var(--title); margin-bottom: 10px; }
+    .rmti-qtext {
+      margin: 0 0 18px;
+      padding-left: 14px;
+      border-left: 3px solid rgba(189, 151, 72, 0.62);
+      font-weight: 600;
+      font-size: clamp(0.98rem, 2.4vw, 1.16rem);
+    }
+    .rmti-options { display: grid; gap: 10px; }
+    .rmti-option {
       width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(10px);
-      z-index: 200;
+      text-align: left;
+      border: 1px solid rgba(185, 153, 105, 0.42);
+      background: rgba(255, 253, 247, 0.84);
+      padding: 13px 14px;
+      cursor: pointer;
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    .rmti-option:hover, .rmti-option.selected {
+      border-color: rgba(156, 54, 49, 0.65);
+      background: rgba(255, 246, 230, 0.94);
+      box-shadow: inset 3px 0 0 rgba(156, 54, 49, 0.5);
+    }
+    .rmti-label {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      margin-right: 9px;
+      border-radius: 50%;
+      background: #e6d4b8;
+      color: var(--red);
+      font-size: 0.78rem;
+    }
+    .rmti-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; flex-wrap: wrap; }
+    .result-type { text-align: center; margin-bottom: 22px; }
+    .result-type h2 { font-family: var(--title); font-size: clamp(1.6rem, 5vw, 2.4rem); margin: 8px 0 4px; }
+    .result-type .tags { color: var(--muted); margin: 0; }
+    .result-card, .methodology {
+      background: rgba(255, 250, 240, 0.82);
+      border: 1px solid rgba(170, 135, 86, 0.34);
+      padding: 18px;
+      margin: 14px 0;
+      box-shadow: 0 8px 24px rgba(80, 42, 13, 0.06);
+    }
+    .result-card h3, .methodology h2, .methodology h3 { font-family: var(--title); color: var(--gold-deep); }
+    .verse { white-space: normal; color: var(--red-soft); font-family: var(--title); line-height: 1.7; }
+    .dimension-bars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .dim-bar { background: rgba(239, 226, 203, 0.65); padding: 11px 12px; }
+    .dim-label, .dim-values { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; gap: 10px; }
+    .track { height: 5px; border-radius: 999px; background: #decdb5; overflow: hidden; margin-top: 6px; }
+    .fill-dim { height: 100%; }
+    .fill-ei { background: #b3443f; } .fill-ns { background: #a67c2e; } .fill-tf { background: #735e4c; } .fill-jp { background: #872b2b; }
+    .counter { display: none; }
+
+    .mirror-app {
+      min-height: 100svh;
+      padding: 56px 16px 28px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 50% 42%, rgba(209, 168, 86, 0.12), transparent 36%),
+        linear-gradient(180deg, #130c0b, #080609 72%);
+      color: #ddc796;
+      overflow: hidden;
+      position: relative;
+      user-select: none;
+    }
+    .mirror-app::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.2;
+      background: url("RMTI.png") center / cover no-repeat;
+      filter: sepia(0.8) brightness(0.45) contrast(1.12);
+    }
+    .mirror-starfield { position: absolute; inset: 0; pointer-events: none; }
+    .star-dust { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #d2ae60; animation: floatDust linear infinite; opacity: 0; }
+    @keyframes floatDust { 0% { transform: translateY(0) scale(.3); opacity: 0; } 10% { opacity: .65; } 100% { transform: translateY(-100vh) scale(.15); opacity: 0; } }
+    .mirror-container { position: relative; z-index: 2; display: grid; justify-items: center; gap: 13px; width: min(100%, 560px); }
+    .mirror-title { text-align: center; }
+    .mirror-title h2 { margin: 0; color: #f1cc70; font-family: var(--title); letter-spacing: 0.24em; font-size: clamp(1.6rem, 7vw, 2.4rem); }
+    .mirror-subtitle { color: rgba(222, 199, 150, 0.62); font-size: 0.8rem; letter-spacing: 0.18em; margin-top: 4px; }
+    .mode-indicator { margin-top: 6px; display: inline-block; border: 1px solid rgba(219, 180, 98, 0.4); padding: 4px 14px; border-radius: 999px; font-size: 0.75rem; letter-spacing: 0.14em; }
+    .mode-dark { color: #e7aaa0; border-color: rgba(205, 92, 82, 0.45); }
+    .canvas-wrapper {
+      width: clamp(280px, min(86vw, 58vh), 480px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid rgba(218, 177, 95, 0.36);
+      box-shadow: 0 0 70px rgba(197, 141, 58, 0.22), inset 0 0 32px rgba(255, 230, 150, 0.08);
+      overflow: hidden;
+      background: radial-gradient(circle, #2d2112, #090708 78%);
+    }
+    #oracleCanvas { display: block; width: 100%; height: 100%; border-radius: 50%; }
+    .button-row { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
+    .mirror-btn, .cert-btn {
+      border: 1px solid rgba(212, 169, 83, 0.5);
+      background: rgba(38, 25, 13, 0.72);
+      color: #dfc892;
+      padding: 9px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      letter-spacing: 0.12em;
+      backdrop-filter: blur(8px);
+    }
+    .mirror-btn:hover, .cert-btn:hover { background: rgba(66, 40, 18, 0.84); }
+    .mirror-btn.active { color: #f0b7ad; border-color: rgba(210, 88, 80, 0.58); background: rgba(65, 22, 21, 0.8); }
+    .hint-text { color: rgba(222, 199, 150, 0.48); font-size: 0.72rem; letter-spacing: 0.14em; text-align: center; }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: max(18px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      background: rgba(4, 3, 5, 0.82);
+      backdrop-filter: blur(14px);
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.3s;
+      z-index: 250;
+      transition: opacity 0.28s ease;
     }
-    #text-overlay.active {
-      opacity: 1;
-      pointer-events: auto;
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-panel {
+      width: min(560px, 96vw);
+      max-height: min(86vh, 820px);
+      overflow: auto;
+      background: rgba(12, 8, 8, 0.96);
+      border: 1px solid rgba(216, 175, 95, 0.34);
+      color: #dcc796;
+      padding: 22px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.45);
     }
-    .text-card {
-      background: rgba(18, 14, 36, 0.88);
-      backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 24px;
-      padding: 32px 36px 28px;
-      max-width: 460px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-    }
-    #custom-text {
-      width: 100%;
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(10, 8, 28, 0.8);
-      color: #e8e4ff;
-      font-size: 18px;
-      text-align: center;
-      outline: none;
-      font-family: "STXingkai", "KaiTi", "楷体", cursive;
-      resize: vertical;
-      min-height: 80px;
-      margin: 18px 0;
-      box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
-    }
-    .input-btn {
-      padding: 10px 26px;
-      border-radius: 22px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(30, 22, 55, 0.75);
-      color: #d8d4f0;
-      cursor: pointer;
-      margin: 0 6px;
-      transition: all 0.25s;
-    }
-    .input-btn.primary {
-      background: rgba(110, 65, 180, 0.75);
-      border-color: var(--accent);
-    }
-    .input-btn:hover {
-      background: rgba(60, 40, 100, 0.8);
-      color: #fff;
-    }
+    .modal-panel.dark { border-color: rgba(203, 86, 80, 0.45); color: #d9b5aa; }
+    .modal-title { font-family: var(--title); color: #f0ca68; font-size: 1.4rem; text-align: center; letter-spacing: 0.14em; }
+    .dark .modal-title { color: #e89486; }
+    .modal-sub { text-align: center; color: rgba(220, 199, 150, 0.58); margin: 5px 0 10px; }
+    .modal-combo { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 10px 0; }
+    .combo-item { border: 1px solid rgba(213, 170, 87, 0.36); padding: 5px 12px; border-radius: 999px; }
+    .modal-section { white-space: pre-line; line-height: 1.8; font-size: 0.9rem; padding: 12px 13px; margin: 10px 0; background: rgba(255,255,255,0.035); border-left: 2px solid rgba(220, 176, 90, 0.5); }
+    .dark .modal-section { border-left-color: rgba(205, 88, 80, 0.55); }
+    .modal-grade { display: inline-block; margin: 8px auto; padding: 5px 14px; border: 1px solid currentColor; border-radius: 999px; }
+    .grade-ji { color: #f0ca68; } .grade-banji { color: #d5b25f; } .grade-xiong { color: #d58d80; }
 
-    /* 响应式调整 */
-    @media (max-width: 768px) {
-      .shape-btn {
-        padding: 5px 10px;
-        font-size: 10px;
-        border-radius: 16px;
-      }
-      #panel-inner {
-        gap: 4px;
-        padding: 0 6px;
-      }
-      .hint-ring {
-        width: 40px;
-        height: 40px;
-      }
-      .hint-text {
-        font-size: 11px;
-      }
-      #progress-indicator {
-        right: 6px;
-      }
-      #progress-bar-track {
-        height: 110px;
-        width: 2px;
-      }
-      .text-card {
-        padding: 20px;
-      }
-      #custom-text {
-        font-size: 16px;
-      }
+    .paradox-app {
+      min-height: 100svh;
+      position: relative;
+      overflow: hidden;
+      background: #160f1d;
+      color: #e8d8f0;
+      touch-action: manipulation;
     }
-    @media (max-width: 480px) {
-      .shape-btn {
-        padding: 4px 7px;
-        font-size: 9px;
-        border-radius: 13px;
-      }
-      #panel-inner {
-        gap: 3px;
-        padding: 0 3px;
-      }
+    .paradox-app canvas { display: block; width: 100%; height: 100%; }
+    .paradox-hud {
+      position: fixed;
+      z-index: 20;
+      pointer-events: none;
+      color: #ead6b8;
+      text-shadow: 0 0 14px rgba(80, 42, 12, 0.9);
+      letter-spacing: 0.1em;
+    }
+    .paradox-info { left: max(16px, env(safe-area-inset-left)); top: calc(max(52px, env(safe-area-inset-top)) + 18px); line-height: 1.8; font-size: 0.88rem; }
+    .paradox-incense { right: max(16px, env(safe-area-inset-right)); top: calc(max(52px, env(safe-area-inset-top)) + 18px); text-align: right; }
+    .incense-meter { width: 76px; height: 5px; margin: 6px 0 0 auto; background: rgba(255,255,255,0.18); overflow: hidden; border-radius: 999px; }
+    .incense-meter span { display: block; height: 100%; background: linear-gradient(90deg, #8b2c2c, #e2bd69); width: 0%; }
+    .paradox-entropy { left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); background: rgba(31, 17, 38, 0.58); border: 1px solid rgba(214, 177, 119, 0.28); border-radius: 999px; padding: 8px 18px; }
+    .paradox-message { position: fixed; z-index: 30; top: 34%; left: 50%; transform: translate(-50%, -50%); width: min(760px, 88vw); text-align: center; color: #fff2dc; opacity: 0; transition: opacity 0.35s ease; pointer-events: none; font-style: italic; line-height: 1.8; text-shadow: 0 0 20px rgba(0,0,0,0.62); }
+    .temptation-pulse { position: fixed; z-index: 35; width: 24px; height: 24px; border-radius: 50%; display: none; background: radial-gradient(circle, #ffe2cb, #b14949 55%, transparent 70%); box-shadow: 0 0 34px #cf6f6f; animation: pulse 1.3s infinite; cursor: pointer; }
+    @keyframes pulse { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.9); opacity: .32; } }
+    .cert-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 300;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: max(58px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+      background: rgba(13, 7, 18, 0.94);
+      backdrop-filter: blur(22px);
+      overflow: auto;
+    }
+    .cert-panel { width: min(720px, 96vw); max-height: 88vh; overflow: auto; text-align: center; border: 1px solid rgba(218, 178, 98, 0.3); padding: 24px; background: rgba(20, 12, 24, 0.82); box-shadow: 0 22px 80px rgba(0,0,0,0.38); }
+    #cert-title { font-family: var(--title); font-size: clamp(2rem, 8vw, 3.6rem); color: #f3d28d; letter-spacing: 0.22em; }
+    #cert-poem, #cert-quote { color: #f0dec4; line-height: 1.85; margin: 12px auto; max-width: 620px; }
+    #cert-stats, #cert-analysis { color: #cdbdd8; line-height: 1.8; max-width: 620px; margin: 12px auto; text-align: left; }
+    .paradox-fallback { min-height: 100svh; display: grid; place-items: center; padding: 24px; text-align: center; line-height: 1.8; background: radial-gradient(circle at 50% 35%, #422236, #120c16 76%); }
+
+    @media (max-width: 760px) {
+      .home-panel { grid-template-columns: 1fr; padding: 18px; }
+      .home-copy { max-width: none; align-self: start; padding-top: 28px; }
+      .home-copy h1 { writing-mode: horizontal-tb; font-size: clamp(2.2rem, 13vw, 4.2rem); max-height: none; }
+      .home-copy p { max-width: 100%; margin-top: 12px; }
+      .home-stage { min-height: 56svh; }
+      .hotspot img { width: clamp(94px, 28vw, 150px); }
+      .hotspot span { font-size: 0.74rem; padding: 6px 9px; }
+      .hotspot.rmti { left: 2%; bottom: 7%; }
+      .hotspot.mirror { right: 3%; top: 4%; }
+      .hotspot.paradox { left: 38%; top: 34%; }
+      .home-note { position: relative; right: auto; bottom: auto; margin-top: 14px; max-width: none; }
+      .dimension-bars { grid-template-columns: 1fr; }
+      .rmti-nav { justify-content: center; }
+      .paradox-info { font-size: 0.74rem; top: 62px; }
+      .paradox-incense { font-size: 0.74rem; top: 62px; }
+      .paradox-entropy { font-size: 0.78rem; white-space: nowrap; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.001ms !important; }
     }
   </style>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.150.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.150.0/examples/jsm/"
+    }
+  }
+</script>
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 </head>
 <body>
-  <!-- 首次进入提示 -->
-  <div id="hint-overlay">
-    <div class="hint-ring"></div>
-    <div class="hint-text">滚轮 · 汇聚灵兽 / 散作星河</div>
-  </div>
-
-  <!-- 散开/汇聚进度指示器 -->
-  <div id="progress-indicator">
-    <span class="progress-label">汇聚</span>
-    <div id="progress-bar-track"><div id="progress-bar-fill" style="height:60%;"></div></div>
-    <span class="progress-label">散开</span>
-  </div>
-
-  <!-- 自定义文字输入弹窗 -->
-  <div id="text-overlay">
-    <div class="text-card">
-      <h3 style="color:#e0dcfa;">✎ 行书文字 (自动换行)</h3>
-      <textarea id="custom-text" maxlength="60" placeholder="输入汉字，星星汇聚成你的笔迹"></textarea>
-      <div style="display:flex; justify-content:center;">
-        <button class="input-btn" id="cancel-btn">取消</button>
-        <button class="input-btn primary" id="confirm-btn">生成</button>
+  <main class="app-root">
+    <section id="home-view" class="home-view">
+      <div class="home-panel">
+        <div class="home-copy">
+          <h1>红楼三境</h1>
+          <p>入园问情，照鉴观心，循香游梦。三处皆从《红楼梦》生发，一为情榜人格，一为风月宝鉴，一为太虚幻境。</p>
+        </div>
+        <div class="home-stage" aria-label="大观园入口">
+          <button class="hotspot rmti" type="button" data-view="rmti" aria-label="进入红楼情榜人格">
+            <img src="assets/landing-pavilion.png" alt="">
+            <span>怡红楼前 · 情榜人格</span>
+          </button>
+          <button class="hotspot mirror" type="button" data-view="mirror" aria-label="进入风月宝鉴">
+            <img src="assets/landing-mirror.png" alt="">
+            <span>风月宝鉴 · 谶纬转盘</span>
+          </button>
+          <button class="hotspot paradox" type="button" data-view="paradox" aria-label="进入太虚幻境">
+            <img src="assets/landing-taixu-gate.png" alt="">
+            <span>太虚门下 · 香烬判词</span>
+          </button>
+        </div>
+        <div class="home-note">说明：此页将三个原作整合为同一处“大观园”。点击画中物件即可入境；每一境都保留原有文字与玩法，并添以红楼式纹样、册页、铜镜、香案与太虚云水。</div>
       </div>
-    </div>
-  </div>
+ <!-- 访客计数模块 -->
+        <div style="position: absolute; bottom: clamp(12px, 2vw, 22px); left: 0; right: 0; text-align: center; z-index: 3; pointer-events: none;">
+    <span style="display: inline-block; padding: 8px 20px; background: rgba(42, 20, 10, 0.6); border: 1px solid rgba(218, 179, 99, 0.35); color: rgba(255, 244, 222, 0.85); font-size: clamp(0.7rem, 1.4vw, 0.82rem); letter-spacing: 0.1em; backdrop-filter: blur(6px); border-radius: 999px; font-family: 'ZCOOL XiaoWei', 'Noto Serif SC', 'KaiTi', serif;">
+        🌿 大观园已迎候 <span id="busuanzi_value_site_pv" style="font-weight: bold; color: #e8c57e;">-</span> 位访客
+        <span style="color: rgba(255,244,222,0.45); margin: 0 6px; font-family: 'Noto Serif SC', serif;">｜</span>
+        <span style="color: #c8a35a; font-style: italic; letter-spacing: 0.12em; font-family: 'ZCOOL XiaoWei', 'STKaiti', 'KaiTi', serif;">等影之人 制</span>
+    </span>
+</div>
+    </section>
+    <section id="game-shell" class="view-shell" aria-live="polite">
+      <button id="back-home" class="back-home" type="button">归园</button>
+      <div id="game-mount"></div>
+    </section>
+  </main>
+  <script>
+    const RMTI_AVAILABLE_IMAGES = [];
+    const RMTI_METHODOLOGY_HTML = "<div class=\"methodology\">\n    <h2>📜 设计说明 · 学术依据</h2>\n    <p>本测试以《红楼梦》脂评本透露的“警幻情榜”为美学框架，融合荣格八维认知功能理论与现代人格心理学中的大五人格模型。脂砚斋评宝玉为“情不情”——以痴情体贴世间无知无识之物；评黛玉为“情情”——只将深情付与有情知己。曹雪芹以“情”为分类学，对人物情感类型进行细致划分，这在中国古典文学中被视为一种朴素而深刻的人格分类体系，与现代心理学的类型学思路不谋而合。</p>\n\n    <div class=\"poem-block\">\n        “开辟鸿蒙，谁为情种？都只为风月情浓。趁着这奈何天，伤怀日，寂寥时，试遣愚衷。因此上，演出这怀金悼玉的《红楼梦》。”<br>\n        <span style=\"font-size:0.7rem;\">—— 《红楼梦曲·引子》</span>\n    </div>\n\n    <h3>一、四大维度之构建</h3>\n    <p>参考人格心理学中能量来源、认知方式、判断方式与处世态度的经典四维模型，结合《红楼梦》独特的美学概念，我们将其重铸为具有红学气质的四组对立维度：</p>\n    <ul>\n        <li><strong>闹 / 静 —— 能量来源：</strong>“闹”如史湘云醉卧芍药裀，在人群的喧闹欢腾中汲取生命的活力；“静”如妙玉栊翠庵独品香茗，于静谧独处方见内心真境。《红楼梦》第四十九回“脂粉香娃割腥啖膻”写湘云雪地啖鹿肉之豪迈，恰是“闹”的极致；而第四十一回“栊翠庵茶品梅花雪”中妙玉以五年梅花雪水烹茶待客之孤洁，则堪称“静”的典范。</li>\n        <li><strong>空 / 象 —— 认知方式：</strong>“空”对应直觉感知——见落花而知离散，感四时之无常，从具象中提取抽象意义；“象”对应实感认知——见落花便去葬花，重具体经验与实物秩序，在可触可感的现实中安放情感。黛玉葬花虽以具象行为著称，其精神内核却是“空”的极致升华——“质本洁来还洁去”一句已是灵魂层面的叩问。</li>\n        <li><strong>情 / 理 —— 判断方式：</strong>“情”即以情感与价值为决策核心，如黛玉终身不曾劝宝玉走仕途经济之路，以内心感受为最高准则；“理”即以逻辑与事理为决策依据，如宝钗洞明世事，以最不伤人的理性路径处理复杂人情。脂评谓宝钗“博学宏览”而黛玉“以兰为心”，二者对照，尽显情、理之别。</li>\n        <li><strong>谨 / 逸 —— 处世态度：</strong>“谨”即计划性与秩序感，如袭人“心中只有一宝玉”，万事求周全妥帖，对宝玉的饮食起居、针黹衣物无不悉数在心；“逸”即灵活性与随性，如晴雯撕扇子作千金一笑，不愿被任何条框束缚，其随兴挥洒的姿态恰是魏晋风度的余韵流传。</li>\n    </ul>\n\n    <h3>二、人格类型之心理学与红学映射</h3>\n    <p>四组维度组合共形成十六种人格类型，其中十二种对应金陵十二钗之“情榜”评语，四种对应《红楼梦》中其他重要意象与情节。映射依据综合了红学界脂评研究、明代世情小说人格美学传统，及当代《红楼梦》人物心理学研究成果。每种人格均包含原著判词或诗句、脂砚斋批语考辨，以及荣格八维认知功能分析。</p>\n    <ul>\n        <li><strong>情不情 · 怡红公子</strong>（闹-空-情-逸 ）：对应贾宝玉,“情不情”出自脂砚斋甲戌本眉批，意谓以痴情体贴世间无知无识之物。热情不羁、厌恶束缚、以赤子之心对抗世俗。</li>\n        <li><strong>情情 · 潇湘妃子</strong>（静-空-情-逸 ）：对应林黛玉,“情情”指只对有情之人以情相待，情感深挚而专一。敏感、理想主义、忠于内在价值，以“质本洁来还洁去”为精神清洁的宣言。</li>\n        <li><strong>情敏 · 末世凤凰</strong>（闹-空-理-谨 ）：对应王熙凤,“机关算尽太聪明”精准刻画其认知锐度与战略思维。协理宁国府时立规矩、明赏罚，极富执行力与掌控欲。</li>\n        <li><strong>情冷 · 蘅芜君</strong>（静-空-理-谨 ）：对应薛宝钗,“任是无情也动人”之“无情”实为洞明世事之后的恒温理性，以最不伤人的路径抵达周全。</li>\n        <li><strong>情逸 · 枕霞旧友</strong>（闹-空-情-逸 ）：对应史湘云,“幸生来，英豪阔大宽宏量”一扫贵族少女的哀怨，是中国古典文学中罕见的阳光型人格典型。</li>\n        <li><strong>情清 · 槛外人</strong>（静-象-情-谨 ）：对应妙玉,“太高人愈妒，过洁世同嫌”概括了其对内在秩序近乎偏执的坚守与精神洁癖。</li>\n        <li><strong>情烈 · 玉山倾</strong>（闹-象-情-逸 ）：对应尤三姐,“揉碎桃花红满地”是刚烈之情的终极写照，活在当下，宁为玉碎，不为瓦全。</li>\n        <li><strong>情贤 · 花气袭人</strong>（静-象-情-谨 ）：对应袭人,“枉自温柔和顺”刻画了守护型人格的周全与缜密，以最精细的心思照顾每个人的感受。</li>\n        <li><strong>情勇 · 蕉下客</strong>（闹-象-理-谨 ）：对应贾探春,“才自精明志自高”直指其执行力与行动力，挽大厦于将倾的改革家气魄。</li>\n        <li><strong>情美 · 霁月彩云</strong>（静-象-情-逸 ）：对应晴雯,“霁月难逢，彩云易散”是不落地的天赋美，把本能活成艺术的极致美学人格。</li>\n        <li><strong>情枯 · 藕榭</strong>（静-空-理-逸 ）：对应贾惜春,“勘破三春景不长”指向理性超越与情感抽离，以冷眼观世寻求精神解脱。</li>\n        <li><strong>情幻 · 兼美</strong>（闹-空-情-逸 ）：对应秦可卿,“情天情海幻情身”揭示了以情感为纽带的人际编织能力，然过度承载他人期待终成幻灭。</li>\n        <li><strong>情痴 · 迷津渡者</strong>（静-象-理-逸 ）：源于第五回贾宝玉梦游太虚幻境中“迷津”意象。以深陷人情网络，警幻仙姑警示“此即迷津也，深有万丈”，须“遇有缘者渡之”。</li>\n        <li><strong>情网 · 红尘织梦者</strong>（静-空-理-逸 ）：源于“孽海情天”宫门对联“厚地高天，堪叹古今情不尽”。以情为网、以梦为舟，乐在编织人间温暖，却也易作茧自缚。</li>\n        <li><strong>情隐 · 青埂峰下客</strong>（闹-象-情-谨 ）：源于第一回青埂峰顽石偈“无材可去补苍天，枉入红尘若许年”。外冷内热，以冷静观察者姿态隐于世间，在关键时刻悄然出手。</li>\n        <li><strong>情豪 · 醉金刚行侠</strong>（闹-象-理-逸 ）：源于第二十四回醉金刚倪二轻财尚义之事。脂评赞其“肝胆照人，岂得以市井无赖目之”。快意恩仇，不拘小节，市井之中自有真侠。</li>\n    </ul>\n\n    <h3>三、题目设计逻辑</h3>\n    <p>三十道题对应三十个关键情境，每题从《红楼梦》中的典型场景化出，四个选项分别指向四个维度的两极。情境设计参考了原著中元妃省亲（第十八回）、黛玉葬花（第二十七回）、海棠诗社（第三十七回）、芦雪广联句（第五十回）、探春理家（第五十五回）、寿怡红群芳开夜宴（第六十三回）、抄检大观园（第七十四回）、凹晶馆联诗（第七十六回）、宝玉梦游太虚（第五回）、金钏投井（第三十二回）、鸳鸯抗婚（第四十六回）、香菱学诗（第四十八回）、龄官画蔷（第三十回）、琉璃世界白雪红梅（第四十九回）等诸多关键章回。每题均为单选题，选择完毕后系统根据四维计分规则，自动判定受测者的最终人格类型。</p>\n\n    <h3>四、学术渊源与参考依据</h3>\n    <p>本测试的学术来源包括但不限于：（1）《脂砚斋重评石头记》甲戌本、靖藏本批语汇编；（2）荣格《心理类型》之八维认知功能理论；（3）Costa &amp; McCrae之大五人格特质模型（NEO-PI-R）；（4）岳晓东《红楼心理诊所》之十二钗人格分析；（5）朱建军《红楼梦圆》之心理动力学解读；（6）孟泠含《INFP林黛玉》现代心理学讲座（2025）；（7）明代世情小说人格美学传统（以《金瓶梅》《红楼梦》为代表的类型化与个性化之辩证）。</p>\n\n    <h3>五、局限性声明</h3>\n    <p>任何类型学本质上都是对复杂人性的简化。《红楼梦》人物的伟大之处，正在于其超越了任何单一标签的框定。正如脂砚斋所批：“写黛玉是黛玉，写宝钗是宝钗，写湘云是湘云，各人各有一段真处。”本测试旨在以游戏的形式引导受测者关注古典文学与心理学的交汇之美，仅供自我探索与娱乐。若想真正理解红楼人物的丰富层次，还请回归原著，在曹雪芹“字字看来皆是血”的笔墨中寻找属于自己的答案。</p>\n</div>\n            <div class=\"poem-block\" style=\"text-align:center;\">\n                “说到辛酸处，荒唐愈可悲。由来同一梦，休笑世人痴！”<br>\n                <span style=\"font-size:0.7rem;\">—— 曹雪芹《题&lt;红楼梦&gt;》</span>\n            </div>\n            <p class=\"footnote\">满纸荒唐言，一把辛酸泪。都云作者痴，谁解其中味？<br>—— 曹雪芹《自题一绝》</p>\n            <div class=\"counter\" id=\"view-counter\">🌿 大观园来过 <span id=\"busuanzi_value_site_pv\"></span> 位访客</div>";
 
-  <!-- 底部形状面板 -->
-  <div id="panel">
-    <div id="panel-toggle"><span></span></div>
-    <div id="panel-inner">
-      <button class="shape-btn active" data-shape="0">❤️ 心</button>
-      <button class="shape-btn" data-shape="1">⭐ 星</button>
-      <button class="shape-btn" data-shape="2">🐉 龙</button>
-      <button class="shape-btn" data-shape="3">🐍 蛇</button>
-      <button class="shape-btn" data-shape="4">🐰 兔</button>
-      <button class="shape-btn" data-shape="5">🐟 鱼</button>
-      <button class="shape-btn" data-shape="6">🐔 鸡</button>
-      <button class="shape-btn" data-shape="7">🌸 花</button>
-      <button class="shape-btn" data-shape="8">🦋 蝶</button>
-      <button class="shape-btn" data-shape="9">🐴 马</button>
-      <button class="shape-btn" data-shape="10">🐶 狗</button>
-      <button class="shape-btn" data-shape="11">🐭 鼠</button>
-      <button class="shape-btn" data-shape="12">🐮 牛</button>
-      <button class="shape-btn" data-shape="13">🐯 虎</button>
-      <button class="shape-btn" data-shape="14">🐑 羊</button>
-      <button class="shape-btn" data-shape="15">🐵 猴</button>
-      <button class="shape-btn custom-btn" id="custom-btn">✎ 自定义</button>
-    </div>
-  </div>
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>"']/g, function (ch) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[ch];
+      });
+    }
 
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    function initRmtiApp(mountEl) {
+      mountEl.innerHTML =
+        '<div class="rmti-app"><div class="rmti-container"><div class="rmti-content">' +
+          '<section id="rmti-start" style="text-align:center;">' +
+            '<div class="rmti-header"><div class="rmti-seal">警 幻 情 榜</div><h1>红楼·情榜人格</h1><p class="rmti-subtitle">你的情，困在哪里？</p></div>' +
+            '<p style="max-width:600px;margin:0 auto 18px;color:var(--muted);text-indent:2em;">曹雪芹原拟在小说末尾，列一张“警幻情榜”，以“情”为尺，为群芳定评。今以《红楼梦》的美学概念为经，现代人格心理学为纬，不测“你是谁”，只看“你在大观园里，如何活着”。</p>' +
+            '<div class="rmti-poem">“满纸荒唐言，一把辛酸泪。都云作者痴，谁解其中味？”<br><span style="font-size:.76rem;color:var(--muted);">—— 曹雪芹《自题一绝》</span></div>' +
+            '<p style="color:var(--gold-deep);letter-spacing:.1em;">凡三十题 · 每题四择 · 约需五分钟</p>' +
+            '<button class="rmti-btn primary" id="rmti-start-btn" type="button">入 园 一 测</button>' +
+            '<p style="font-size:.76rem;color:var(--muted);opacity:.68;">仅供娱乐 · 莫失莫忘</p>' +
+          '</section>' +
+          '<section id="rmti-test" style="display:none;">' +
+            '<div class="rmti-header"><div class="rmti-seal">警 幻 情 榜</div><h2>红楼·情榜人格</h2></div>' +
+            '<div class="rmti-progress"><div class="rmti-progress-track"><div class="rmti-progress-fill" id="rmti-progress-fill"></div></div><div class="rmti-progress-text" id="rmti-progress-text"></div></div>' +
+            '<div id="rmti-question"></div>' +
+            '<div class="rmti-nav"><button class="rmti-btn" id="rmti-prev" type="button">上一题</button><button class="rmti-btn primary" id="rmti-next" type="button">下一题</button></div>' +
+          '</section>' +
+          '<section id="rmti-result" style="display:none;"><div id="rmti-result-content"></div><div class="rmti-nav" style="justify-content:center;"><button class="rmti-btn primary" id="rmti-restart" type="button">重新测试</button></div>' + RMTI_METHODOLOGY_HTML + '</section>' +
+        '</div></div></div>';
+
+      const questions = [
+                { id:1, scene: `【第一回】元妃省亲 · 大观园灯彩辉煌`, text: `元妃省亲之夜，大观园灯火通明、鼓乐喧天。元春题诗“衔山抱水建来精，多少工夫筑始成”，你更倾向于——`, image: `hlm_01_jia_zheng_feng_zhi_gui_fei_sheng_qin.jpg`, options: [
+                    { text: `融入这场盛大的欢聚，人越多越精神，享受满园的流光溢彩。`, dim: `E` },
+                    { text: `在热闹中找一处稍静的角落，远远看着这一切，心里也是欢喜的。`, dim: `I` },
+                    { text: `注意到元春诗中“天上人间诸景备”一句，暗想这园子果然包罗万象。`, dim: `N` },
+                    { text: `细心观察各房丫鬟们的排班调度，暗暗佩服凤姐的治家手段。`, dim: `S` }
+                ]},
+                { id:2, scene: `【第二回】沁芳闸桥边 · 落红成阵`, text: `暮春时节，你看见桃花花瓣被风吹落，纷纷扬扬落入沁芳闸水中……`, image: `hlm_02_mai_xiang_zhong_dai_yu_qi_can_hong.jpg`, options: [
+                    { text: `心头一恸：开到荼蘼花事了，转眼就是春归无觅处。这花瓣的飘零，像极了人生的离散。`, dim: `N` },
+                    { text: `拿起花帚，将落花扫起，装入绢袋，埋在花冢之中——这是最实在的怜惜。`, dim: `S` },
+                    { text: `觉得葬花之举太过悲戚，不如呼朋引伴，办一场饯花盛会，热热闹闹送春归。`, dim: `E` },
+                    { text: `独自在桥边坐了很久，看着流水把花瓣一片片带走，心里有说不出的安静。`, dim: `I` }
+                ]},
+                { id:3, scene: `【第三回】海棠诗社 · 秋爽斋限韵`, text: `探春下了帖子邀你入海棠诗社，限韵咏白海棠。众人都在拈阄寻思……`, image: `hlm_03_qiu_shuang_zhai_ou_jie_hai_tang_she.jpg`, options: [
+                    { text: `你第一个站起来，朗声道：“有了有了！”虽然不算最佳但胜在最快，博得满堂彩。`, dim: `E` },
+                    { text: `你默默构思，反复推敲，直到最后才拿出一首“淡极始知花更艳”，众人皆惊。`, dim: `I` },
+                    { text: `你觉得这诗社规矩太多，不如大家随意联句，像芦雪广那样即兴发挥才痛快。`, dim: `P` },
+                    { text: `你主动承担了记录和誊抄的职责，把每一首诗都工工整整地抄在绢帛上。`, dim: `J` }
+                ]},
+                { id:4, scene: `【第四回】凤姐理事 · 宁国府点卯`, text: `王熙凤协理宁国府，有人迟到了片刻，她当众打了那人二十大板，阖府肃然……`, image: `hlm_04_wang_xi_feng_xie_li_ning_guo_fu.jpg`, options: [
+                    { text: `心里暗暗佩服：这才是治家的手段，规矩不立不行，赏罚分明方成大器。`, dim: `T` },
+                    { text: `觉得那人虽然该罚，但当众打板子实在太不留情面，心里有几分不忍。`, dim: `F` },
+                    { text: `你注意到凤姐虽然面上严厉，但事后悄悄让人送了伤药过去——她其实心不冷。`, dim: `F` },
+                    { text: `你仔细分析了宁国府的积弊，觉得凤姐只靠威刑恐非长久之策，还应修改制度本身。`, dim: `T` }
+                ]},
+                { id:5, scene: `【第五回】芦雪广联句 · 即景联诗`, text: `大雪天，众人聚在芦雪广即景联句，你一句我一句，场面热闹非凡……`, image: `hlm_05_lu_xue_ting_zheng_lian_ji_jing_shi.jpg`, options: [
+                    { text: `你争着抢着要联下一句，哪怕抢跑了韵脚也乐在其中。`, dim: `P` },
+                    { text: `你在心里默默排好了韵脚和节奏，等轮到自己时才从容不迫地接上。`, dim: `J` },
+                    { text: `你联出了“沁梅香可嚼”这样奇崛的句子，众人拍案叫绝。`, dim: `N` },
+                    { text: `你联的是“开门雪尚飘”——平实但准确，稳稳当当地接住了上句。`, dim: `S` }
+                ]},
+                { id:6, scene: `【第六回】宝玉梦游太虚幻境 · 薄命司`, text: `你在梦中来到一处仙宫，匾上写着“薄命司”三字，那副对联是“春恨秋悲皆自惹，花容月貌为谁妍”……`, image: `hlm_06_jia_bao_yu_shen_you_tai_xu_jing.jpg`, options: [
+                    { text: `你感到一阵巨大的悲凉涌上来：原来一切早已注定，这些女子的命运早被写好了。`, dim: `N` },
+                    { text: `你掀开册子一篇篇仔细翻看，想把每一幅画、每一句判词都记在心里。`, dim: `S` },
+                    { text: `你觉得这不过是梦而已，醒来后该怎样还怎样，倒也不必太过挂怀。`, dim: `T` },
+                    { text: `你为那些素不相识的女子流下泪来，心里堵得慌，久久不能平复。`, dim: `F` }
+                ]},
+                { id:7, scene: `【第七回】金钏投井 · 王夫人房中`, text: `金钏儿投井自尽的消息传来，王夫人正在房中垂泪，说都是自己的罪过……`, image: `hlm_07_jin_chuan_tou_jing.jpg`, options: [
+                    { text: `你觉得首要之事是安抚王夫人，建议多赏些银子给金钏家人，妥善了结后事。`, dim: `T` },
+                    { text: `你心里涌起一阵酸楚：一个鲜活的生命就这样没了，多赏银两又如何能弥补？`, dim: `F` },
+                    { text: `你默默想着：井底胭脂冷，人间岁月长。这荣国府里，还有多少看不见的眼泪。`, dim: `N` },
+                    { text: `你立即去查问当日是谁当值、金钏被撵的具体经过，想弄清楚事情的全貌。`, dim: `S` }
+                ]},
+                { id:8, scene: `【第八回】探春理家 · 兴利除弊`, text: `探春暂代凤姐管家，打算在大观园推行“承包制”——将园子里的花草树木分包给婆子们打理……`, image: `hlm_08_min_tan_chun_xing_li_chu_su_bi.jpg`, options: [
+                    { text: `你觉得这主意极好！与其墨守成规，不如放手一试，说不定能闯出一条新路。`, dim: `P` },
+                    { text: `你先问了详细的章程：谁来管？怎么分账？出了差错谁来承担？把这些都想清楚再表态。`, dim: `J` },
+                    { text: `你从情感上很支持探春——一个庶出的姑娘敢做这样的改革，太不容易了。`, dim: `F` },
+                    { text: `你冷静地分析了利弊：承包制固然开源节流，但会不会引发婆子们之间的争斗？`, dim: `T` }
+                ]},
+                { id:9, scene: `【第九回】寿怡红群芳开夜宴 · 掣花签`, text: `宝玉生日之夜，众人关了院门，掣花签饮酒。轮到你了，花签上写着——`, image: `hlm_09_yi_hong_ye_yan_tu.jpg`, options: [
+                    { text: `不管签上写的什么，你第一个举杯：“喝就是了！”满座都跟着你热闹起来。`, dim: `E` },
+                    { text: `你仔细端详签上的诗句，反复咀嚼其含义，心想这签怎么像是说中了我的心事呢。`, dim: `I` },
+                    { text: `你看到签上画的是牡丹，立刻想起宝钗“任是无情也动人”——这花签有深意啊。`, dim: `N` },
+                    { text: `你注意到今晚的酒是惠泉酒，杯子是海棠冻石蕉叶杯，这些细节让人觉得分外惬意。`, dim: `S` }
+                ]},
+                { id:10, scene: `【第十回】黛钗金兰契 · 互剖金兰语`, text: `秋窗风雨夕，黛玉病中，宝钗前来探望，两人互剖心迹。黛玉感念道：“东西事小，难得你多情如此。”`, image: `hlm_10_jin_lan_qi_hu_pou_jin_lan_yu.jpg`, options: [
+                    { text: `你深深感动于这一刻的真情流露：两个平日里各自骄傲的人，终于放下了防备。`, dim: `F` },
+                    { text: `你注意到宝钗送的是燕窝而非人参——燕窝性平润肺，人参性热不宜黛玉体质，用药般的精准。`, dim: `T` },
+                    { text: `你觉得人与人之间能这样坦诚相对，真是难得。希望自己也能有这样的知己。`, dim: `E` },
+                    { text: `你更愿意保持适当的距离，太过亲密的关系反而让人不安。`, dim: `I` }
+                ]},
+                { id:11, scene: `【第十一回】抄检大观园 · 夜里忽然查抄`, text: `王善保家的带着人抄检大观园，查到你的住处时，所有人都在看着……`, image: `hlm_11_huo_jian_chan_chao_jian_da_guan_yuan.jpg`, options: [
+                    { text: `你“豁啷”一声把箱子倒扣在地上：“都拿去吧！”——宁可玉碎，不为瓦全。`, dim: `P` },
+                    { text: `你冷静地打开箱子，一件一件摆出来让人查看，面上不动声色，心里却记下了这笔账。`, dim: `J` },
+                    { text: `你觉得这是对自己人格的极大侮辱，就算过后证明清白，心里的刺也拔不掉了。`, dim: `F` },
+                    { text: `你迅速判断了形势：这是大房和二房之间的内斗波及到自己，冷静应对才是上策。`, dim: `T` }
+                ]},
+                { id:12, scene: `【第十二回】凹晶馆联诗 · 中秋夜月`, text: `中秋之夜，黛玉和湘云在凹晶馆联诗。“寒塘渡鹤影，冷月葬花魂。”——你听到这两句……`, image: `hlm_12_ao_jing_guan_lian_shi_bei_ji_mo.jpg`, options: [
+                    { text: `你被这两句诗击中了——太好的诗，但太过悲凉。忍不住也想要吟一句。`, dim: `E` },
+                    { text: `你默然良久，心里反复咀嚼“冷月葬花魂”五个字，久久不能言语。`, dim: `I` },
+                    { text: `你觉得湘云的“寒塘渡鹤影”其实更好——有动有静，有冷有热，还有一丝洒脱。`, dim: `N` },
+                    { text: `你注意到今夜月色虽好，但池水已经有些凉了，该提醒两位姑娘早些回去添衣。`, dim: `S` }
+                ]},
+                { id:13, scene: `【第十三回】荣国府元宵开夜宴`, text: `元宵夜宴，贾母命摆上陈设，满堂子孙绕膝。戏台上正唱得热闹，你却——`, image: `hlm_13_rong_guo_fu_yuan_xiao_kai_ye_yan.jpg`, options: [
+                    { text: `坐到最前排，和众姊妹一起猜灯谜、行酒令，笑得最大声。`, dim: `E` },
+                    { text: `拣了个靠窗的位子，看着外面的烟火，觉得比戏台上的更有味道。`, dim: `I` },
+                    { text: `你注意到今晚的戏单上有《牡丹亭》，暗想这等浓词艳曲与贾府气象是否相合。`, dim: `N` },
+                    { text: `你默默数了数今晚共上了多少道菜肴，又记下哪些菜贾母多夹了两箸。`, dim: `S` }
+                ]},
+                { id:14, scene: `【第十四回】香菱学诗 · 黛玉论诗`, text: `香菱向黛玉学诗，黛玉说出“词句究竟还是末事，第一立意要紧”的话，又举“大漠孤烟直，长河落日圆”为例。`, image: `hlm_14_xiang_ling_xue_shi.jpg`, options: [
+                    { text: `你深以为然：作诗如此，做人亦如此——若无真性情，辞藻再华丽也是虚的。`, dim: `N` },
+                    { text: `你觉得初学还是先练基本功，把平仄对仗练熟了再来谈立意不迟。`, dim: `S` },
+                    { text: `你被香菱的痴劲儿打动了，主动帮她改了几处韵脚，逐字讲解。`, dim: `F` },
+                    { text: `你为香菱列了一份循序渐进的书单：先读王维五律，次读杜甫七律……`, dim: `T` }
+                ]},
+                { id:15, scene: `【第十五回】鸳鸯抗婚 · 断发明志`, text: `鸳鸯当着众人剪下一缕头发，哭着发出此生不嫁的誓言……`, image: `hlm_15_yuan_yang_nv_shi_jue_yuan_yang_ou.jpg`, options: [
+                    { text: `你从心底里敬佩她：宁死不屈，用最激烈的方式守护自己的尊严。`, dim: `F` },
+                    { text: `你冷静想了一下：鸳鸯此举固然壮烈，但恐怕会触怒贾赦，后面更难周全。`, dim: `T` },
+                    { text: `你觉得这贾府表面繁华，底下却藏着多少这样的肮脏事，一时悲从中来。`, dim: `N` },
+                    { text: `你留意到贾母的反应——她真正动怒了，这场闹剧最终还得由老太太来收场。`, dim: `S` }
+                ]},
+                { id:16, scene: `【第十六回】枕霞阁史湘云做东`, text: `湘云要起诗社做东，宝钗帮她安排了螃蟹宴。湘云即兴作了“萧疏篱畔科头坐，清冷香中抱膝吟”。`, image: `hlm_16_pang_xie_yan.jpg`, options: [
+                    { text: `一大早就跑去帮忙，不拘做什么，凑热闹最要紧。`, dim: `P` },
+                    { text: `提前问清时间、地点、与会人名单，心里盘算好当日自己的行程。`, dim: `J` },
+                    { text: `你为湘云的热情所感染，觉得真心可贵，自己也想尽一份力。`, dim: `F` },
+                    { text: `你估算了螃蟹宴的花费，心里暗暗计算这顿饭大概要吃掉一个庄稼人一年的嚼用。`, dim: `T` }
+                ]},
+                { id:17, scene: `【第十七回】栊翠庵品茶 · 妙玉奉茶`, text: `妙玉请宝钗黛玉喝体己茶，用“瓟斝”、“点犀䀉”等珍器，水是五年前梅花上的雪。`, image: `hlm_17_jia_bao_yu_pin_cha_long_cui_an.jpg`, options: [
+                    { text: `你大方地询问茶器的来历，与妙玉谈茶论道，不觉间已说了许多话。`, dim: `E` },
+                    { text: `你安静地品茶，观察妙玉泡茶的每一道工序，心里暗暗叹服她的品味。`, dim: `I` },
+                    { text: `你注意到这两件器物名字古怪，暗含“班袍假体”等谶语——妙玉待客似有深意。`, dim: `N` },
+                    { text: `你尝出这雪水与旧年蠲的雨水滋味确有不同，更轻浮甘洌。`, dim: `S` }
+                ]},
+                { id:18, scene: `【第十八回】茜纱窗下 · 晴雯撕扇`, text: `晴雯失手跌了扇子，宝玉说了她几句，她便冷笑道：“先时连那么样的玻璃缸、玛瑙碗不知弄坏了多少……”`, image: `hlm_18_qing_wen_si_shan.jpg`, options: [
+                    { text: `你觉得晴雯这话里有更深的不满——不只是为扇子，是平日里积攒的委屈爆发了。`, dim: `N` },
+                    { text: `你注意到那扇子原是湘妃竹骨、名人书画，确实可惜了。`, dim: `S` },
+                    { text: `你赶紧打圆场，劝完宝玉又劝晴雯，不想看到他们争吵。`, dim: `F` },
+                    { text: `你分析二人的性格冲突：一个太过随意，一个太过敏感，今日之事只是导火索。`, dim: `T` }
+                ]},
+                { id:19, scene: `【第十九回】敏探春兴利除宿弊`, text: `探春理家，赵姨娘的兄弟死了，探春按旧例赏了二十两银子。赵姨娘来闹，探春当众说：“我是按着旧规矩办。”`, image: `hlm_19_min_tan_chun_xing_li_chu_su_bi.jpg`, options: [
+                    { text: `你心疼探春——她心里必定难受，那是她亲娘，可规矩在身，她不得不如此。`, dim: `F` },
+                    { text: `你赞成探春：理家就该如此，若徇私情，往后谁还服她？制度比人情更重要。`, dim: `T` },
+                    { text: `你从这件事看出探春对自己庶出身份的矛盾心态——她比任何人都想摆脱这个标签。`, dim: `N` },
+                    { text: `你去查了旧账，发现赵国基的赏银确实按例是二十两，探春并未刻薄。`, dim: `S` }
+                ]},
+                { id:20, scene: `【第二十回】琉璃世界白雪红梅`, text: `下了大雪，众人相约明日去芦雪广赏雪联句。李纨说：“我才看见栊翠庵的红梅有趣。”`, image: `hlm_20_liu_li_shi_jie_bai_xue_hong_mei.jpg`, options: [
+                    { text: `兴奋得睡不着，恨不得马上天亮，什么也不准备，明天披上斗篷就走。`, dim: `P` },
+                    { text: `仔细检查了明日要穿的衣裳鞋袜，备好手炉和诗稿，又嘱咐丫鬟天亮前叫醒。`, dim: `J` },
+                    { text: `你想着明天定要联出几句好诗，又想到可向妙玉乞红梅，更添雅趣。`, dim: `N` },
+                    { text: `你回忆往年大雪的场景，把去年联句的记录翻出来，想看看有没有可借鉴的句子。`, dim: `S` }
+                ]},
+                { id:21, scene: `【第二十一回】龄官画蔷 · 蔷薇花架下`, text: `你偶然看见一个女孩子蹲在蔷薇花架下，拿簪子在地上反复画着一个字，画了几十个……`, image: `hlm_21_ling_guan_hua_qiang.jpg`, options: [
+                    { text: `你忍不住走过去，想知道她画的是什么字，心里猜她一定有一段故事。`, dim: `E` },
+                    { text: `你远远站着，不去打扰。这画面本身已经足够动人，不需再去追问。`, dim: `I` },
+                    { text: `你觉得这女孩子心中似有无限的苦楚无法言说，只得用这种方式来排遣——太让人心酸了。`, dim: `N` },
+                    { text: `你注意到她画的是“蔷”字，想起园子里有个叫贾蔷的，心里大概明白了。`, dim: `S` }
+                ]},
+                { id:22, scene: `【第二十二回】听曲文宝玉悟禅机`, text: `宝玉听《寄生草》后，写下“你证我证，心证意证。是无有证，斯可云证……”`, image: `hlm_22_ting_qu_wen_bao_yu_wu_chan_ji.jpg`, options: [
+                    { text: `你读到这话，心里咯噔一下——这分明是对人生的终极追问，背后是巨大的虚无感。`, dim: `N` },
+                    { text: `你觉得这不过是宝玉一时的痴话，受了戏文的熏染，过几日自然就忘了。`, dim: `S` },
+                    { text: `你为宝玉这种状态感到担忧：他太容易陷入精神困境，需要有人把他拉出来。`, dim: `F` },
+                    { text: `你逐句分析了他的偈子，觉得其实逻辑上漏洞不少，不过是强说愁而已。`, dim: `T` }
+                ]},
+                { id:23, scene: `【第二十三回】俏平儿情掩虾须镯`, text: `平儿的虾须镯丢了，发现是宝玉房里的小丫头坠儿偷的。平儿选择瞒下此事，只说是自己丢在草根底下。`, image: `hlm_23_qiao_ping_er_qing_yan_xia_xu_zhuo.jpg`, options: [
+                    { text: `你觉得平儿真是善良：顾全了宝玉的脸面，又保住了坠儿的工作，只想大事化小。`, dim: `F` },
+                    { text: `你虽理解平儿的好意，但偷窃毕竟是底线问题，若不处理，日后恐怕更难管束。`, dim: `T` },
+                    { text: `你注意到平儿在说这件事时，特意避开了晴雯——她知道晴雯的脾气，怕闹大。`, dim: `S` },
+                    { text: `你从中看到大观园管理上的漏洞：出入的人太多，贵重物品的保管制度形同虚设。`, dim: `T` }
+                ]},
+                { id:24, scene: `【第二十四回】勇晴雯病补雀金裘`, text: `宝玉的雀金裘烧了个洞，第二天舅老爷生日必须穿。晴雯正病着，却挣扎起来熬夜补裘……`, image: `hlm_24_yong_qing_wen_bing_bu_que_jin_qiu.jpg`, options: [
+                    { text: `你被这一幕深深震撼——这不仅是手艺，更是拼命的情义。`, dim: `F` },
+                    { text: `你觉得应该想个更周全的办法，比如连夜找人帮忙，或者另备一件衣裳，不该让病人硬撑。`, dim: `J` },
+                    { text: `你从晴雯补裘的手法看出她极高的天赋——界线织补不是一般人能做的，她真是屈才了。`, dim: `N` },
+                    { text: `你注意到晴雯用的金线是俄罗斯国的，与府里常备的不同，这种细节只有晴雯才会留心。`, dim: `S` }
+                ]},
+                { id:25, scene: `【第二十五回】刘姥姥醉卧怡红院`, text: `刘姥姥误打误撞闯进了怡红院，在你的床上睡了一觉，弄得满屋酒气……`, image: `hlm_25_liu_lao_lao_zui_wo_yi_hong_yuan.jpg`, options: [
+                    { text: `你哈哈大笑，觉得这老太太真是有趣，反而问她睡得可好，要不要再喝碗茶。`, dim: `E` },
+                    { text: `你赶紧查看房间有没有被弄乱，虽不生气，但心里暗暗决定以后要把门关好。`, dim: `I` },
+                    { text: `你想到刘姥姥这一生艰辛，偶尔醉卧一回锦绣堆，倒像是命运给她的一丝补偿。`, dim: `N` },
+                    { text: `你仔细检查了床铺，换下被褥，又用熏香把屋子重新熏了一遍。`, dim: `S` }
+                ]},
+                { id:26, scene: `【第二十六回】蜂腰桥设言传心事`, text: `小红在蜂腰桥遇到贾芸，两人四目相对，小红“不觉把脸一红，一扭身往蘅芜苑去了”……`, image: `hlm_26_feng_yao_qiao_she_yan_chuan_xin_shi.jpg`, options: [
+                    { text: `你立刻察觉到这两人之间微妙的情愫——这一扭身里藏着多少心跳和期待。`, dim: `N` },
+                    { text: `你注意到小红手里拿着的手帕是新换的，颜色也与今日衣裳相配——显然是刻意打扮过的。`, dim: `S` },
+                    { text: `你为小红感到高兴，希望她能得偿所愿，底层女孩也该有自己的春天。`, dim: `F` },
+                    { text: `你冷静地评估这段关系的可能性：一个是家生子丫鬟，一个是旁支爷们，前路艰难。`, dim: `T` }
+                ]},
+                { id:27, scene: `【第二十七回】埋香冢黛玉泣残红`, text: `黛玉葬花时哭吟《葬花吟》：“一年三百六十日，风刀霜剑严相逼……”`, image: `hlm_27_mai_xiang_zhong_dai_yu_qi_can_hong.jpg`, options: [
+                    { text: `你听得心都碎了，这是把整颗心剖出来给人看，每一句都是血泪。`, dim: `F` },
+                    { text: `你虽感动，但暗自觉得这种情绪过于极端——人生固然有苦，但不必天天挂在嘴边。`, dim: `T` },
+                    { text: `你听到“质本洁来还洁去”一句，忽然明白黛玉葬的不是花，是自己不肯妥协的灵魂。`, dim: `N` },
+                    { text: `你注意到黛玉用的花帚和绢袋都是特制的，她对葬花这件事的认真程度超乎常人。`, dim: `S` }
+                ]},
+                { id:28, scene: `【第二十八回】秋爽斋偶结海棠社`, text: `探春偶然动了起诗社的念头，写了花笺分送众人，笺上写“今因伏几独处，忽思历来古人，处名攻利夺之场，犹置些山滴水之区……”`, image: `hlm_28_qiu_shuang_zhai_ou_jie_hai_tang_she.jpg`, options: [
+                    { text: `兴奋得马上提笔回书，表示必定参加，还顺手写了首海棠诗一并送去。`, dim: `P` },
+                    { text: `仔细记下诗社的日期、地点、限韵要求，开始有计划地构思自己的作品。`, dim: `J` },
+                    { text: `你觉得“诗社”二字太美了，从此大观园不再只是一座园子，而是一个精神共同体。`, dim: `N` },
+                    { text: `你注意到探春的花笺用的是梅花笺纸，字迹仿的是卫夫人——这份雅致令人赞叹。`, dim: `S` }
+                ]},
+                { id:29, scene: `【第二十九回】享福人福深还祷福`, text: `贾母率众人去清虚观打醮，观里的小道士不小心撞了凤姐，被凤姐打了一掌……`, image: `hlm_29_jia_mu_qin_nian_xiang_qing_xu_guan.jpg`, options: [
+                    { text: `你赶紧过去扶起那小道士，温言安慰他，又让人带他去吃东西压惊。`, dim: `F` },
+                    { text: `你觉得凤姐反应过度，但也能理解——在众人面前维持威严，她也是身不由己。`, dim: `T` },
+                    { text: `你想起贾母常说“可怜见的”，这小道士年纪小，想必也是穷苦人家的孩子。`, dim: `N` },
+                    { text: `你观察到张道士在贾母面前毕恭毕敬，应对极有分寸，不愧是老于世故的人。`, dim: `S` }
+                ]},
+                { id:30, scene: `【第三十回】痴公子余痛慰前情`, text: `宝玉去潇湘馆探黛玉，正值黛玉午睡，紫鹃在回廊上做针线。宝玉便和紫鹃说了几句话……`, image: `hlm_30_xiao_xiang_guan_dai_yu_wu_shui.jpg`, options: [
+                    { text: `你发现宝玉对丫鬟的体贴是发自内心的，他对紫鹃说话的语气和对黛玉并无二致。`, dim: `N` },
+                    { text: `你注意到紫鹃做的是黛玉的鞋，针脚细密，还绣了兰花——她对黛玉的照顾无微不至。`, dim: `S` },
+                    { text: `你觉得紫鹃是个难得的好丫鬟，一心为主，这份情谊在贾府里实属珍贵。`, dim: `F` },
+                    { text: `你分析宝黛关系的关键人物其实是紫鹃——她是中间最可靠的桥梁和缓冲地带。`, dim: `T` }
+                ]}
+            ];
+      let currentQ = 0;
+      const answers = {};
+      const startPage = mountEl.querySelector('#rmti-start');
+      const testPage = mountEl.querySelector('#rmti-test');
+      const resultPage = mountEl.querySelector('#rmti-result');
+      const questionBox = mountEl.querySelector('#rmti-question');
+      const progressFill = mountEl.querySelector('#rmti-progress-fill');
+      const progressText = mountEl.querySelector('#rmti-progress-text');
+      const prevBtn = mountEl.querySelector('#rmti-prev');
+      const nextBtn = mountEl.querySelector('#rmti-next');
+      const resultContent = mountEl.querySelector('#rmti-result-content');
+
+      function calculateResult() {
+        const scores = { E: 0, I: 0, N: 0, S: 0, T: 0, F: 0, J: 0, P: 0 };
+        Object.values(answers).forEach(function (v) { if (scores[v] !== undefined) scores[v]++; });
+        const ei = scores.E >= scores.I ? 'E' : 'I';
+        const ns = scores.N >= scores.S ? 'N' : 'S';
+        const tf = scores.T >= scores.F ? 'T' : 'F';
+        const jp = scores.P >= scores.J ? 'P' : 'J';
+        return { ei: ei, ns: ns, tf: tf, jp: jp, scores: scores };
       }
-    }
-  </script>
+      function getPersonality() {
+    const { ei, ns, tf, jp, scores } = calculateResult();
+    const key = ei + ns + tf + jp;
+    const base = {
+        // ==================== 十二正钗（对应传统十二种人格） ====================
+        'ENFP': {
+            name: '情不情 · 怡红公子',
+            tags: '对万物皆有情 · 绝代情痴 · 赤子之心',
+            verse: '潦倒不通世务，愚顽怕读文章。\n行为偏僻性乖张，那管世人诽谤！\n富贵不知乐业，贫穷难耐凄凉。\n可怜辜负好韶光，于国于家无望。',
+            desc: '脂砚斋在甲戌本眉批中以“情不情”三字为宝玉定评，并解释道：“凡世间之无知无识之物，彼俱有一痴情去体贴。”这一考语揭示了宝玉人格中最核心的特质——一种极为发散的、超越物种与功利界限的共情能力。他看见燕子就和燕子说话，河里看见了鱼就和鱼说话（第十九回），对月长吁，临风洒泪，警幻仙姑谓之“意淫”，并称其“天分中生成一段痴情”。从荣格八维来看，宝玉的认知模式以外倾直觉为主导功能，这使他善于在毫不相干的事物间建立深层联想——他听到黛玉的《葬花吟》，便能推及宝钗、香菱、袭人等人的命运轨迹；辅助功能内倾情感则使他在行动上虽然奔放不羁，内心深处却始终忠于一套不可动摇的价值系统——他终身不曾走上仕途经济之路，这正是内倾情感对世俗价值的根本否定。第二十三回“西厢记妙词通戏语”中，宝玉在沁芳闸桥边将花瓣抖入池中，生怕脚步践踏，脂砚斋于此夹批“情不情”三字，并感叹：“非宝玉，不能有此想；非作者，不能有此写。”此一批语揭示了曹雪芹与宝玉在人格上的深刻共振。然而，脂评亦点醒“有情极之毒”——“情不情”的背面是“情极而无情”，宝玉最终悬崖撒手、出家为僧的结局，正预示了这种人格类型的悲剧性归宿：过度的共情往往反噬自身，当承载的情感重量超过临界点，便只能以彻底的疏离作为自我保护。你需为自己留一处清净之地，方能长久守护这颗赤子之心而不至于燃尽。',
+            extra: '你是贾宝玉的现世投影。脂批云：“玉兄一生情不情，所谓天下古今第一淫人也。”此“淫”非贬义，实为对万物之深情——愿你永葆这份痴情，亦能寻得自己的“大观园”栖身，在入世与出世之间找到微妙的平衡点。',
+            ref: '脂砚斋甲戌本眉批；第十九回宝玉与燕子说话；第二十三回沁芳闸夹批；第五回警幻仙姑论“意淫”'
+        },
+        'INFP': {
+            name: '情情 · 潇湘妃子',
+            tags: '情只给知己 · 诗意殉道者 · 质本洁来还洁去',
+            verse: '质本洁来还洁去，强于污淖陷渠沟。\n未若锦囊收艳骨，一抔净土掩风流。\n侬今葬花人笑痴，他年葬侬知是谁？\n一朝春尽红颜老，花落人亡两不知！',
+            desc: '“情情”是脂砚斋在情榜中给黛玉的独家定评——只将深情付与有情之人，专注于心，决绝于行。她不曾劝宝玉走仕途经济之路，不是不知道这对宝玉的前程有益，而是她以情感与内在价值为第一准则，无法容忍任何对灵魂的亵渎。从荣格八维来看，黛玉的主导功能为内倾情感——这是八种认知功能中最以内在价值系统为导向的一种，表现为“以兰为心，以玉为骨”，将自我的道德洁癖置于一切外在评判之上；她的辅助功能为外倾直觉，这使她能敏锐地感知世间万物的互联，从一花一木的荣枯中捕捉到命运的无常轨迹。《葬花吟》中的“一年三百六十日，风刀霜剑严相逼”，绝非无病呻吟——这是一个高度敏感者对周遭环境之敌意的精确洞察。脂砚斋在批阅此回时多次点出“黛玉一生是聪明所误”——太清醒，所以无法假装糊涂；太较真，所以无法苟且偷安；太不肯妥协，所以只能在“污淖”与“渠沟”之间选择以生命殉道。你亦清高自许，在人群中常感孤独，但请记得：孤标傲世携谁隐？黛玉尚有宝玉为知己。在保持灵魂清洁的同时，偶尔与尘世和解，并不是背叛自己的价值准则。',
+            extra: '你是林黛玉的现世投影。脂批又云：“黛玉一生是聪明所误。”你的敏锐是天赋，也是重负。请保持那颗不肯同流合污的诗心，但亦需学会与“风刀霜剑”共存——有时守住光明，比对抗黑暗更需要智慧。',
+            ref: '“情情”定评见脂评情榜体系；葬花吟第二十七回；孟泠含《INFP林黛玉》讲座（2025）'
+        },
+        'ENTJ': {
+            name: '情敏 · 末世凤凰',
+            tags: '聪明过人 · 杀伐决断 · 机关算尽',
+            verse: '机关算尽太聪明，反误了卿卿性命。\n生前心已碎，死后性空灵。\n家富人宁，终有个家亡人散各奔腾。\n枉费了意悬悬半世心，好一似荡悠悠三更梦。',
+            desc: '凤姐之“敏”，脂砚斋以“乱世之奸雄，治世之能臣”十字评之，语气中既有赞赏亦有叹惋。她的主导功能为外倾思维，这是一种以效率、执行力与制度构建为核心驱动力的认知模式。协理宁国府一回，她一改旧制，“卯正二刻点卯”，迟到者当众打二十大板，阖府肃然——这不仅仅是杀伐果断，更展现出一个卓越管理者对“制度武器化”的精准运用。然而曹雪芹在王熙凤判词中以“机关算尽太聪明，反误了卿卿性命”作结，既是对她一生的盖棺定论，也是对外倾思维过度使用而忽视情感联结的严厉警示。脂砚斋在批阅凤姐结局时写道：“一生辛苦，只为他人作嫁衣裳。”她的防御机制极为复杂——时而泼辣刚硬如母夜叉，时而柔情体贴如亲姐姐，在不同人面前展现截然不同的人格面具，这本是权力的来源，却也是她最终孤立无援的根源。你同样具备出色的执行力与战略思维，是天生的领导者，但请警觉：算无遗策不如偶尔示弱，有些账永远算不清，有些人情永远比效率更重要。',
+            extra: '你是王熙凤的现世投影。脂批说“英雄末路，千古同悲”，记住“机关算尽”未必是褒奖——温情有时比效率更有力量，卸下铠甲片刻，反而能赢得真正的盟友。',
+            ref: '王熙凤判词第五回；脂评“奸雄”语；协理宁国府第十三回；《红楼心理诊所》第三章'
+        },
+        'INTJ': {
+            name: '情冷 · 蘅芜君',
+            tags: '用冷包裹热 · 山中高士 · 任是无情也动人',
+            verse: '淡极始知花更艳，任是无情也动人。\n念念心随归雁远，寥寥坐听晚砧痴。\n珍重芳姿昼掩门，自携手瓮灌苔盆。\n胭脂洗出秋阶影，冰雪招来露砌魂。',
+            desc: '宝钗在群芳夜宴中掣得牡丹花签，题曰“任是无情也动人”，此句取自唐代罗隐《牡丹花》，曹雪芹以之比宝钗，堪称绝妙。此“无情”绝非冷漠寡恩，而是洞明世事之后以恒温理性应对纷繁人情的高级智慧。她的居所“雪洞一般”全无富丽闲妆，这是内心秩序感最直接的外在投射——她不需要外物来装点自我，因为她的价值体系早已自足而稳固。从荣格八维看，宝钗的主导功能为内倾直觉，这使她能洞察复杂局势的真正利害所在；辅助功能外倾思维则让她具备将洞察转化为行动的能力。第四十五回“金兰契互剖金兰语”中，她送黛玉燕窝而非人参，因“燕窝性平润肺，人参性热不宜你体质”——这种如用药般精准的关怀，正是内倾直觉与外倾思维协同运作的完美体现。脂砚斋谓宝钗“博学宏览，胜诸才人”，你同样具备深厚的智识与长远的眼光。只是偶尔也需记得：高士并非无情，情已化为山海之沉静；冷香丸可疗热毒，但心中那团温火偶尔也值得被释放——在万全的理性之外，偶尔一次的任性，反而是最高级的自我关怀。',
+            extra: '你是薛宝钗的现世投影。脂评赞你“博学宏览”，但也心疼那个“雪洞一般”的房间——偶尔让春光入室，并不会破坏你精心构筑的秩序之美。',
+            ref: '牡丹花签第六十三回；海棠诗第三十七回；金兰契互剖金兰语第四十五回；脂评“无情”语'
+        },
+        'ENFP2': {
+            name: '情逸 · 枕霞旧友',
+            tags: '英豪阔大 · 光风霁月 · 醉卧芍药裀',
+            verse: '幸生来，英豪阔大宽宏量，从未将儿女私情略萦心上。\n好一似，霁月光风耀玉堂。\n厮配得才貌仙郎，博得个地久天长，\n准折得幼年时坎坷形状。',
+            desc: '史湘云于《红楼梦曲·乐中悲》中获曹雪芹以“幸生来，英豪阔大宽宏量，从未将儿女私情略萦心上”作定评——此二十三字一挥而就，将大观园所有贵族少女的闺怨与哀婉一扫而尽，造就了中国古典文学中极为罕见的阳光型人格典型。湘云的认知模式同样以外倾直觉为主导，这让她在芦雪广联句中屡出奇句（“沁梅香可嚼”“寒塘渡鹤影”）；她的内倾情感虽然是辅助功能，却在自嘲身世时展现出极罕见的通透——她对父母早亡的凄苦并非麻木不知，而是以一种超越自怜的姿态坦然接纳。第六十二回“憨湘云醉眠芍药裀”中，她醉卧花丛、香梦沉酣的画面，具有极高的美学自足性：这是一种完全超越了性别规训与阶级仪轨的生命舒展。脂砚斋评此回时叹道：“湘云是真名士自风流，其英豪处正不可及。”然而脂评也隐约点出“幼年坎坷”四字背后难以言说的伤痛——她襁褓中父母双亡，由叔叔抚养，却依然能笑得如此灿烂，这份心理弹性在现代心理学中被视为积极情绪力的极高表现。你就是这般小太阳，但请记得：太阳也需要偶尔躲进云层休息，不必时时发光。在照亮他人的同时，请允许自己被照亮。',
+            extra: '你是史湘云的现世投影。脂批赞你“真名士自风流”，愿你永葆这份“英豪阔大”——但也请记得，醉卧花丛的人也需要一个温暖的臂弯。',
+            ref: '《红楼梦曲·乐中悲》第五回；醉眠芍药裀第六十二回；脂评“英豪阔大”语'
+        },
+        'ISTJ': {
+            name: '情清 · 槛外人',
+            tags: '孤洁自守 · 秩序守护 · 过洁世同嫌',
+            verse: '太高人愈妒，过洁世同嫌。\n可怜金玉质，终陷淖泥中。\n欲洁何曾洁，云空未必空。\n可怜侯门绣户女，独卧青灯古佛旁。',
+            desc: '妙玉以“槛外人”自称，这道“槛”既是物理边界——栊翠庵的山门，更是精神边界——她为自己筑起的高不可攀的秩序围墙。她对品茶器具的等级区分（“瓟斝”与“点犀䀉”）近乎仪式化，对泡茶用水的挑剔（五年前梅花上的雪水）近乎偏执，这在荣格八维的视角下，正是内倾直觉与内倾思维协同运作的极致体现：她将每一次待客都视为一场对外界的精密测试，用最严苛的标准筛选准入者。第四十一回中，刘姥姥用过的成窑茶杯她命人“搁在外头去罢”，这一举动常被误读为势利，实则是一种对“内在秩序被污染”的应激防御——她弃绝的不是一个具体的人，而是一种她无法容忍的外界入侵。靖藏本眉批透露她“他日瓜洲渡口，红颜固不能不屈从枯骨”——这条批语以极冷的口吻预言了她的悲剧，揭示出外界之“浊”对其纯粹性施加的无情碾压。从大五人格的视角看，妙玉在“尽责性”与“秩序感”上得分极高，却在“宜人性”上偏低，这使她在污浊世界中成为一座孤岛。你同样以严格标准守护内心秩序，请继续这份珍贵的坚守，但也不必以“槛”隔绝所有温度——偶尔开门迎客，栊翠庵的红梅依然会傲雪绽放。',
+            extra: '你是妙玉的现世投影。靖藏本眉批预言了你的宿命——过洁难容世。请继续守护你的精神洁癖，但偶尔请人入室共饮一杯茶，并不会减损你的纯粹。',
+            ref: '妙玉判词第五回；栊翠庵品茶第四十一回；靖藏本眉批“瓜洲渡口”；《红楼心理诊所》第二章'
+        },
+        'ESFP': {
+            name: '情烈 · 玉山倾',
+            tags: '宁为玉碎 · 活在当下 · 揉碎桃花红满地',
+            verse: '揉碎桃花红满地，玉山倾倒再难扶。\n来自情天，去由情地。\n（尤三姐）\n\n霁月难逢，彩云易散。\n心比天高，身为下贱。\n风流灵巧招人怨，寿夭多因诽谤生。\n（晴雯）',
+            desc: '尤三姐以鸳鸯剑自刎与晴雯撕扇、倒箱子，虽一刚一柔，其本质却惊人地相通——她们都是以外倾感觉为主导功能的人格典型。外倾感觉是一种沉浸于当下感官体验、追求即时行动与强烈体验的认知模式。晴雯撕扇子只为“听个响儿”，这是Se对感官快感的极致追求；病补雀金裘则是一旦投入便“豁出命去”的瞬间猛力，完全不留余力。临终铰下指甲赠与宝玉时说的那句“既担了虚名，越性如此”，堪称一场凄美而决绝的行为艺术——以自我毁灭的方式完成对世界的最后一次正面回击。尤三姐的刚烈则更为壮烈：脂砚斋赞她“刚烈非寻常女子可比”，然而在脂评本中，她的自刎不源于“名节”观念的被动胁迫，而源于“宁为玉碎”的自主生命信条——当柳湘莲的退婚击碎了她亲手编织的关于“非他不嫁”的唯美蓝图时，她选择的不是在污浊中苟活，而是让生命在最绚烂的瞬间戛然而止。你的情是人群中最鲜活的那抹色彩——浓烈、炽热、不留余地。但“彩云易散”，过于锋利的美好容易被浑浊的世道视为眼中钉。请保持这股烈火，但也要学会为自己裹上一层温柔的鞘，让这份热烈能够持续燃烧而非瞬间寂灭。',
+            extra: '你是尤三姐与晴雯的现世投影。脂评赞你“刚烈非寻常女子可比”——宁为玉碎是无畏的勇气，但学会在浊世中保全自己，让色彩持续绽放，同样是了不起的智慧。',
+            ref: '尤三姐自刎第六十六回；晴雯事迹散见各回；脂评“刚烈”语'
+        },
+        'ISFJ': {
+            name: '情贤 · 花气袭人',
+            tags: '温柔和顺 · 灯火守望者 · 暗藏千钧',
+            verse: '枉自温柔和顺，空云似桂如兰。\n堪羡优伶有福，谁知公子无缘。\n花气袭人知昼暖，鹊声穿树喜新晴。\n（陆游，曹雪芹借以命名）',
+            desc: '“花气袭人知昼暖”是曹雪芹借陆游诗句为袭人命名，笔法极简而容量极大——花气无形，弥漫而不咄咄逼人，恰如她身上的“和顺”并非软弱，而是一种暗藏千钧的柔性力量。她深知自己“姨娘预备役”的尴尬地位，因此以比常人更精细万倍的心思打理着怡红院的一切事务——从宝玉每天要穿什么衣服到丫鬟们的值夜排班，从贵重物品的保管到突发事件的处理，她默默编织着一张安全网，让大观园最张扬的角落也能平稳运转。从大五人格模型来看，她在“尽责性”上得分极高，“宜人性”也显著超出常人。脂砚斋在批语中为她正名：“袭人自有千钧之力。”此言绝非过誉——第三十四回宝玉挨打后，她独闯王夫人房中，以肺腑之言进谏，既保全了宝玉的名声，也为大观园埋下了一根隐形的防护线。红学界对她的争议从未停止，但一个底层丫鬟在秩序森严的贾府中，以“和顺”为盾、以“缜密”为剑，为自己争取到了最大的生存空间和最稳妥的职业路径，这份柔韧与智慧本身就值得被书写。你同样总是在群体中默默付出，是那个最不可或缺却最易被忽略的角色。请相信：你的温柔并非无力，而是暗藏千钧之力。',
+            extra: '你是花袭人的现世投影。脂批为你正名：“袭人自有千钧之力。”灯火阑珊处，自有你最温暖而恒久的光芒——请不必妄自菲薄。',
+            ref: '袭人判词第五回；进谏王夫人第三十四回；脂评“袭人千钧”'
+        },
+        'ESTJ': {
+            name: '情勇 · 蕉下客',
+            tags: '才志清明 · 敢为人先 · 千里东风一梦遥',
+            verse: '才自精明志自高，生于末世运偏消。\n清明涕送江边望，千里东风一梦遥。\n\n（探春房中对联）\n烟霞闲骨格，泉石野生涯。',
+            desc: '探春是贾府四春中最具改革魄力的人物。她在抄检大观园时掌掴王善保家的，并当众痛呼：“百足之虫，死而不僵，必须先从家里自杀自灭起来，才能一败涂地！”脂砚斋称“探春之怒，正为贾府之哀”——此怒绝非个人意气，而是一个清醒者看到大厦将倾时，以孤身之力试图挽狂澜于既倒的悲壮呐喊。她的主导功能为外倾思维，这在第五十五回“敏探春兴利除宿弊”中展现得淋漓尽致：她推行“承包制”将园子里的花木分包给婆子们打理，既开源节流又明确赏罚——这是一个天才管理者对制度建设的直觉把握。然而，庶出的身份始终像一道隐形的符咒贴在她的额头。岳晓东在《红楼心理诊所》中将她这种自卑界定为“孤傲型自卑”——赵姨娘来闹时，她公事公办地按旧例赏银二十两，同时泣诉“我但凡是个男人，可以出得去，我必早走了”，其志其痛，如刀刻竹简般分明深刻。你胸中自有一番经世济民的宏愿，执行力和行动力皆远超常人。虽然环境未必总是山温水软，但正如脂批所言，“使探春不远嫁，贾家或不败”——你的存在本身就是一种可能性的明证，是黑暗中的一缕霞光。',
+            extra: '你是贾探春的现世投影。脂批说“探春之怒，正为贾府之哀”——千里东风一梦遥，但追梦本身已经足够壮阔，足以照亮你身边的一片天地。',
+            ref: '贾探春判词第五回；抄检大观园第七十四回；敏探春除弊第五十五回；《红楼心理诊所》第一章'
+        },
+        'ISFP': {
+            name: '情美 · 霁月彩云',
+            tags: '天赋灵巧 · 行为艺术 · 心比天高身为下贱',
+            verse: '霁月难逢，彩云易散。\n心比天高，身为下贱。\n风流灵巧招人怨，寿夭多因诽谤生。\n多情公子空牵念。',
+            desc: '晴雯是《红楼梦》前八十回中美学完成度最高的人物之一，也是荣格八维中外倾感觉主导者的典型代表。撕扇子是为了“听个响儿”——这是Se对感官体验毫无保留的追求；病补雀金裘则是从“懒得动”到“豁出命”的瞬间切换，投入便不留一丝余力，这是Se使用者的典型行为模式；抄检大观园时“豁啷一声将箱子倒扣在地上”，则是本能对规训的即兴大膽反抗。曹雪芹在判词中写“霁月难逢，彩云易散”——“霁月”既寓其名（晴），更象征其光明磊落如雨过天晴之月的高洁品性；“彩云”暗合其字（雯），喻其美好如云锦的绚烂，却“易散”，暗示因不容于浑浊环境而被无情摧折的悲剧宿命。她临终铰下指甲赠与宝玉，说的那句话——“既担了虚名，越性如此”——以一场凄美绝伦的行为艺术捍卫了不可让渡的尊严。你的情是不落地的天赋美，把本能活成了一件艺术品，不愿接受任何形式的框定与规训。“风流灵巧招人怨”——过于锋利的美好容易被浑浊的世道视为眼中钉。愿你有锋芒，也有护锋芒的鞘，让那份美不至于易散。',
+            extra: '你是晴雯的现世投影。脂评惜你“为聪明风流所害”——你的美与才华是天赋，保护好自己，才能让这份美在更长久的岁月里静静绽放。',
+            ref: '晴雯判词第五回；病补雀金裘第五十二回；抄检大观园第七十四回；知乎“从荣格八维看晴雯”（2023）'
+        },
+        'INTP': {
+            name: '情枯 · 藕榭',
+            tags: '冷眼观世 · 精神超越 · 勘破三春景不长',
+            verse: '勘破三春景不长，缁衣顿改昔年妆。\n可怜绣户侯门女，独卧青灯古佛旁。\n\n（惜春灯谜）\n前身色相总无成，不听菱歌听佛经。\n莫道此身沉黑海，性中自有大光明。',
+            desc: '惜春是正钗中年龄最小的一位，却最早勘破繁华背后的终极虚空。脂砚斋在批阅时感叹：“惜春年幼，偏有如此见识。”她的理性抽离与情感疏远并非源于天生冷漠，而是在三个姐姐的悲剧中一次次得到血腥验证后形成的自我保护机制——元春的宫墙葬身、迎春的婚姻惨死、探春的远嫁离散，仅有的温情样本变成了冷酷的预告。从认知心理学来看，她的主导功能为内倾思维——以冷静的逻辑分析将情感抽离成可被解释的现象；辅助功能为外倾直觉——能迅速从碎片表象中捕捉到事物发展的必然轨迹和深层模式。她与宁国府的彻底切割，直言“我清清白白的一个人，为什么叫你们带累坏了我”，连嫂子尤氏也被她冷言打发——这一决绝的姿态，是在业已腐朽的家族结构之外，保全自我完整性的一条孤绝之路。岳晓东在《红楼心理诊所》中将她定位为“冷漠型情感障碍”的典型样本，并指出将她简单划入“冷漠”或“逃避”的标签均失之于片面——她不是无情，而是将情感转移到了更高维度的精神追求之中。你同样习惯于冷眼旁观，但退后一步或许更能看清棋局的全部落子。独卧青灯古佛旁未必是逃避，有时是更高维度上的清醒回归。',
+            extra: '你是贾惜春的现世投影。脂评叹你“年幼偏有如此见识”——退后一步看清全局，这不是软弱，而是一种难能可贵的清醒定力。',
+            ref: '贾惜春判词第五回；与宁国府决裂第七十四回；《红楼心理诊所》第四章'
+        },
+        'ENFJ': {
+            name: '情幻 · 兼美',
+            tags: '温柔梦乡 · 理想化身 · 情天情海幻情身',
+            verse: '情天情海幻情身，情既相逢必主淫。\n漫言不肖皆荣出，造衅开端实在宁。\n\n（秦可卿房中联）\n世事洞明皆学问，人情练达即文章。',
+            desc: '秦可卿乳名“兼美”，兼具黛玉之袅娜与宝钗之妩媚，这一命名本身就是一个巨大的隐喻——她是太虚幻境中警幻仙姑之妹在人间的投影，亦是整个人际关系网中最关键的连接点：将仙界与人世、长辈与晚辈、荣府与宁府紧紧地编织在一起。从荣格八维视角看，她的主导功能为外倾情感——这使她天生懂得如何感知他人的情绪需求并给予恰到好处的情感回馈，让每个接触她的人都感到如沐春风。然而“情天情海幻情身”——“兼美”既是她的天赋，也是她终生的陷阱：承载了太多不属于自己的期待和情感投射，过分迎合每一个角色的期许，最终只能在无法承受的重压下走向幻灭。脂砚斋在批阅到可卿托梦凤姐一节时哭批“此作者刺心之笔也”——在她以临终预言者的身份发出“树倒猢狲散”这一极度清醒的警告时，她真正的自我才短暂地挣脱“兼美”这令人窒息的面具，露出了深藏不露的恐惧与苍凉。你有如沐春风的天赋能力，是天生的情感维系者，但“情天情海”的下一句便是“幻情身”——学会为自己而活，为自己留一扇窗，是你一生中最难却也最重要的功课。',
+            extra: '你是秦可卿的现世投影。脂砚斋哭批“此作者刺心之笔也”——兼美是你的天赋，但承载过多便成负荷。学会为自己留一扇窗，才能让你的温柔不至于将自己淹没。',
+            ref: '秦可卿判词第五回；托梦凤姐第十三回；靖藏本批语“刺心之笔”'
+        },
 
-  <script type="module">
-    import * as THREE from 'three';
-    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-    import { SVGLoader } from 'three/addons/loaders/SVGLoader.js';
-
-    // ==================== 粒子配置 ====================
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent) || window.innerWidth < 768;
-    const MAIN = isMobile ? 35000 : 100000;   // 主粒子
-    const MID  = isMobile ? 12000  : 35000;   // 中层粒子
-    const BG   = isMobile ? 30000  : 50000;    // 背景星空
-    const RADIUS = 7.0;
-    const SHAPE_SCALE = 3.5;
-
-    // ==================== 场景初始化 ====================
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#000312');
-    scene.fog = new THREE.FogExp2('#000312', 0.000004);
-
-    const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.4, 70);
-    camera.position.set(0, 2.8, 12.5);
-    camera.lookAt(0, 0, 0);
-
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
-    document.body.appendChild(renderer.domElement);
-
-    // 后期特效：Bloom辉光
-    const composer = new EffectComposer(renderer);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.2, 0.7, 0.06);
-    composer.addPass(bloom);
-
-    // ==================== 纹理生成 ====================
-    function makeTex(s, color1, color2) {
-      const c = document.createElement('canvas');
-      c.width = s;
-      c.height = s;
-      const ctx = c.getContext('2d'),
-        h = s / 2;
-      const g = ctx.createRadialGradient(h, h, 0, h, h, h);
-      g.addColorStop(0, color1);
-      g.addColorStop(0.03, color1);
-      g.addColorStop(0.12, color2);
-      g.addColorStop(0.5, 'rgba(60,30,120,0.02)');
-      g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, s, s);
-      return new THREE.CanvasTexture(c);
-    }
-    const texMain = makeTex(128, 'rgba(255,255,255,0.7)', 'rgba(255,180,100,0.5)');
-    const texMid  = makeTex(64,  'rgba(255,255,250,1)', 'rgba(180,140,220,0.5)');
-
-    // ==================== 银河分布 ====================
-    function galaxyPositions(count, radius) {
-      const pos = new Float32Array(count * 3);
-      const arms = 5,
-        twist = 2.95;
-      for (let i = 0; i < count; i++) {
-        let r, angle, y;
-        if (i < count * 0.3) {
-          // 核球
-          r = Math.pow(Math.random(), 2) * radius * 0.18;
-          angle = Math.random() * Math.PI * 2;
-          y = (Math.random() - 0.5) * r * 1.5;
-        } else if (i < count * 0.7) {
-          // 主旋臂
-          const arm = i % arms;
-          const base = (arm / arms) * Math.PI * 2;
-          const t = Math.pow(Math.random(), 0.55);
-          r = t * radius * 0.9 + radius * 0.04;
-          angle = base + Math.log(r + 0.6) * twist + (Math.random() - 0.5) * 0.4;
-          y = (Math.random() - 0.5) * 0.15 * r * (1 - t * 0.6);
-          if (Math.random() < 0.15) { i--;
-            continue; }
-        } else if (i < count * 0.9) {
-          // 旋臂桥接
-          const arm = i % arms;
-          const base = (arm / arms) * Math.PI * 2 + 0.3;
-          r = radius * 0.4 + Math.random() * radius * 0.65;
-          angle = base + Math.log(r + 0.6) * twist * 1.1 + (Math.random() - 0.5) * 0.8;
-          y = (Math.random() - 0.5) * r * 0.4;
-        } else {
-          // 弥散晕
-          r = radius * 0.3 + Math.random() * radius * 0.9;
-          angle = Math.random() * Math.PI * 2;
-          y = (Math.random() - 0.5) * r * 0.7;
+        // ==================== 四种“迷情”人格（对应新增四种组合） ====================
+        'ESFJ': {
+            name: '情痴 · 迷津渡者',
+            tags: '迷途忘返 · 深陷情网 · 渡头余落日',
+            verse: '春梦随云散，飞花逐水流。\n寄言众儿女，何必觅闲愁。\n（警幻仙姑示警）\n\n一场幽梦同谁近，千古情人独我痴。',
+            desc: '在第五回“贾宝玉神游太虚境”中，宝玉与可卿行至一处，荆棘遍地、虎狼同群，忽见一道黑溪阻路，并无桥梁可通。警幻仙姑警示道：“此即迷津也。深有万丈，遥亘千里，中无舟楫可通，只有一个木筏，乃木居士掌舵，灰侍者撑篙，不受金银之谢，但遇有缘者渡之。”你身处“迷津”之中，以外倾感觉敏锐地捕捉每一个当下的欢愉与悸动，却以外倾情感深陷于人情网络的千丝万缕之中，难以自拔。你的情如同一张密实而温暖的蛛网，将身边所有你在意的人都牢牢编织在一起——这是一种天赋，一种慷慨，却也是一种极深的执念。脂砚斋评点“迷津”一节时批道：“所谓迷津易堕，尘网难逃。”一“堕”一“逃”，写尽了这万丈迷津的危险与无奈。你需警惕的是：渡人需要一艘木筏，但唯有先渡了自己，方能不被这万丈迷津的波涛所吞没。在牵挂他人之前，请先为自己的心灵留下一片干爽的岸土。',
+            extra: '你是太虚幻境迷津渡口的守望者。警幻仙姑云：“但遇有缘者渡之。”愿你既能渡人，亦能在疲惫时成为被渡的那个有缘之人——漂泊并非宿命，木筏已在眼前。',
+            ref: '第五回贾宝玉梦游太虚幻境；警幻仙姑“迷津”示警；脂评“迷津易堕”'
+        },
+        'ENFJ2': {
+            name: '情网 · 红尘织梦者',
+            tags: '情丝万缕 · 温柔陷阱 · 作茧自缚',
+            verse: '厚地高天，堪叹古今情不尽。\n痴男怨女，可怜风月债难偿。\n（孽海情天宫对联）\n\n开辟鸿蒙，谁为情种？\n都只为风月情浓。',
+            desc: '这副对联悬于太虚幻境的“孽海情天”牌坊两侧，曹雪芹以十六字写尽古今情缘的本质——情是永远偿不完的债。你拥有极强的共情能力与编织人际网络的天赋，这与“兼美”的外倾情感一脉相承；但与之不同的是，你并不被动地承载他人的期待，而是主动以情为经、以梦为纬，在人间亲手编织一张温暖而繁复的大网。你乐于成为人群中的情感节点，从每一次真诚的互动中获得满足与力量。然而，脂砚斋在此回批道：“情之至者，必主于淫。”此处的“淫”字，当取其古义——“过度”之意。当情网编织得过于细密、过于用心时，织网者自己也成为了网中的飞蛾，终将被自己亲手点亮的灯火所灼伤。你需警惕这种“过度”：给予之前先确认自身是满溢而非枯竭的井，温暖他人之前先确保自己的炉火不曾熄灭。偶尔剪断几缕丝线，并不会让整张网失去其存在的意义，反而能让它更加坚韧。',
+            extra: '你是“孽海情天”中的织梦者。情网以温暖为名，但请记得偶尔留出透气之孔——在给予之前，请先确认自己的烛火不曾因过度燃烧而黯淡。',
+            ref: '第五回孽海情天宫对联；脂评“情之至者必主于淫”'
+        },
+        'ISTP': {
+            name: '情隐 · 青埂峰下客',
+            tags: '大隐于市 · 冷眼热心 · 顽石点头',
+            verse: '无材可去补苍天，枉入红尘若许年。\n此系身前身后事，倩谁记去作奇传。\n（青埂峰顽石偈）\n\n满纸荒唐言，一把辛酸泪。\n都云作者痴，谁解其中味？',
+            desc: '这首诗题于青埂峰下那块无材补天的顽石之上，乃是整部《石头记》的缘起与总纲。你就像那块被遗弃于大荒山青埂峰下的石头——外表朴拙冷漠，内心却将世态炎凉看了个通透。你的主导功能为内倾思维，以冷静的逻辑分析默默观察着世间万象的运作机理；辅助功能为外倾感觉，则让你敏锐地捕捉到每一个稍纵即逝的细节，并从中提取出他人难以察觉的信息。脂砚斋批“无材补天”四字时写道：“八字便是作者一生惭恨。”但这“惭恨”并非自轻自贱——而是一种看透世事后选择沉默的深情，一种知其不可为而隐退的清醒。你不屑于在人群中高声喧哗，宁愿做一个冷眼热心的旁观者，在关键时刻悄然伸出援手，事了拂衣去，深藏身与名。茫茫大士与渺渺真人携你入世历劫，只为让你体验一番人间的悲欢离合。愿你历尽千帆归来，仍是那块青埂峰下未被世俗烟火熏染的朴拙顽石。',
+            extra: '你是青埂峰下那块通灵顽石的现世投影。一僧一道曾携你入世历劫——愿你历经大观园的悲欢聚散后，依然保有一颗“情隐”的通透与寂静。',
+            ref: '第一回青埂峰顽石偈；茫茫大士渺渺真人携石入世；脂评“无材补天”批语'
+        },
+        'ESTP': {
+            name: '情豪 · 醉金刚行侠',
+            tags: '快意恩仇 · 肝胆相照 · 市井英雄',
+            verse: '仗义每多屠狗辈，负心多是读书人。\n（曹雪芹借醉金刚倪二之口）\n\n赤条条来去无牵挂。\n（鲁智深，与第二十二回宝玉所听《寄生草》）',
+            desc: '在第二十四回“醉金刚轻财尚义侠”中，市井泼皮倪二偶遇落魄的贾芸，听闻其遭遇后竟慷慨解囊，借出十五两三钱银子，且不要借据、不收利息。脂砚斋于此批道：“今之读书人，何尝有此肝胆？”倪二虽是轻描淡写的一笔闲墨，却在大观园雅致的诗文唱和之外，劈开了一扇通往市井江湖的窗——那里有另一种人格在呼吸。你的主导功能为外倾感觉，让你全然活在当下、享受此刻的风云际会；辅助功能为内倾思维，则让你在看似粗犷的行动背后，自有冷静的判断与敏锐的直觉。你的“情”不在风花雪月的诗社酬唱之中，而在快意恩仇的市井江湖之间，在街边酒肆的豪爽笑声里。你或许不拘小节、不懂温柔，但骨子里自有一份绝不背叛的侠义心肠。脂砚斋赞倪二“肝胆照人，岂得以市井无赖目之”，愿你永葆这份赤诚肝胆——在精致而繁复的人间，偶尔也需要这种粗线条的、不假思索的豪情来劈开沉闷的空气。',
+            extra: '你是醉金刚倪二的现世投影。脂批赞你“肝胆照人，岂得以市井无赖目之”——在衣冠楚楚的世界里，你的赤诚肝胆反而更显得珍贵与真实。',
+            ref: '第二十四回醉金刚轻财尚义侠；脂评“肝胆照人”'
         }
-        pos[i * 3] = Math.cos(angle) * r;
-        pos[i * 3 + 2] = Math.sin(angle) * r;
-        pos[i * 3 + 1] = y;
+    };
+    // 特殊逻辑：ENFP 区分宝玉与湘云
+    if (key === 'ENFP') {
+        if (scores.E >= 3 && scores.N >= 3 && scores.T <= 1) return base['ENFP2'];
+        return base['ENFP'];
+    }
+    // 特殊逻辑：ENFJ 区分可卿与情网
+    if (key === 'ENFJ') {
+        if (scores.T >= 3) return base['ENFJ2'];
+        return base['ENFJ'];
+    }
+    return base[key] || base['ENFP'];
+}
+      function getDimensionInsight(ei, ns, tf, jp, scores) {
+    const insights = {
+        '闹': `你的心理能量主要来源于外界。如同史湘云醉卧芍药裀时那份舒展的酣态——你在人群中汲取活力，在喧闹中感到充实。这种外向型的能量流让你善于感染他人，是天生的气氛调动者。但需留意：过多的外界刺激也可能让你忽略内在的声音，偶尔独处反而是必要的平衡。曹雪芹写湘云“幸生来英豪阔大宽宏量”，这份豁达是你最珍贵的底色。`,
+
+        '静': `你的心理能量主要来源于内在。如同妙玉在栊翠庵独自品茶时的专注——你需要独处的静谧来恢复精力，在自省中获得力量。这种内向型的能量流让你拥有深邃的思考力，善于在安静中洞察事物的本质。但需留意：过度的内敛可能让你与外界的温暖失之交臂。妙玉虽自称“槛外人”，却也曾折红梅赠予宝玉——偶尔启门迎客，并不会减损你的精神洁癖。`,
+
+        '空': `你的认知方式偏向直觉与抽象。如同黛玉见花落而感离散——你拥有敏锐的直觉，善于从纷繁表象中捕捉深层意义与象征联系。这种直觉型认知让你擅长宏观思考，能够看到事物的整体图景与潜在可能。但需留意：过度依赖直觉有时会让你忽略现实的细节。黛玉葬花虽美，却也“花落人亡两不知”——将目光从虚空收回几分，脚下的路会更踏实。`,
+
+        '象': `你的认知方式偏向实感与具体。如同宝钗见落花便去葬花——你注重可以触摸的现实，信赖具体经验与实物秩序。这种实感型认知让你脚踏实地，善于处理细节与流程，在可操作的范围内游刃有余。但需留意：过度关注眼前有时会限制你对长远可能性的想象。宝钗虽务实，却也曾写下“好风频借力，送我上青云”——偶尔抬头望天，会看到更广阔的风景。`,
+
+        '情': `你的判断方式以情感与价值为核心。如同黛玉终身不曾劝宝玉走仕途经济之路——你重视人际和谐与内心感受，忠于本心，不为外物所动。这种情感导向的判断让你具备高度的共情能力，善于理解他人的感受。但需留意：过度的情感投入有时会让你在做决定时犹豫不决。黛玉的“情情”虽美，却也让她一生为情所困——学会在关键时刻为自己设立边界，反而能让你的善良更有力量。`,
+
+        '理': `你的判断方式以逻辑与事理为核心。如同宝钗洞明世事却选择最不伤人的路径——你重视公正与效率，在理性分析中找到安全感。这种思维导向的判断让你具备冷静的分析能力，善于在复杂局面中做出客观决策。但需留意：过度的理性有时会让他人觉得你冷漠疏离。宝钗的“任是无情也动人”，动人之处恰在于冷香丸下那颗温热的内心——适时展露真实情感，会让你的智慧更具温度。`,
+
+        '谨': `你的处世态度偏向计划与秩序。如同袭人对宝玉饮食起居的悉心照料——你喜欢按部就班，在有规律的生活中找到掌控感。这种判断型的处世风格让你值得信赖，是团队中稳定的基石。但需留意：过度的秩序感有时会让你在面对意外变化时感到焦虑。袭人虽温柔和顺，却也曾在晴雯被逐时保持沉默——偶尔随性而为，会让你的生活少一些紧绷，多一分松驰。`,
+
+        '逸': `你的处世态度偏向灵活与随性。如同晴雯撕扇子作千金一笑——你享受自由与探索，不愿被条框束缚，在即兴中绽放光彩。这种感知型的处世风格让你充满创造力，是人群中最鲜活的那抹色彩。但需留意：过度的随性有时会让你忽略必要的规划与责任。晴雯的“心比天高”虽美，却也因“风流灵巧招人怨”——在自由与责任之间找到平衡，会让你的光彩更为持久。`
+    };
+
+    const dimCN = { E: '闹', I: '静', N: '空', S: '象', T: '理', F: '情', J: '谨', P: '逸' };
+    let result = '';
+    result += `<strong>${dimCN[ei]}（能量来源）</strong><br>${insights[dimCN[ei]]}<br><br>`;
+    result += `<strong>${dimCN[ns]}（认知方式）</strong><br>${insights[dimCN[ns]]}<br><br>`;
+    result += `<strong>${dimCN[tf]}（判断方式）</strong><br>${insights[dimCN[tf]]}<br><br>`;
+    result += `<strong>${dimCN[jp]}（处世态度）</strong><br>${insights[dimCN[jp]]}`;
+    return result;
+}
+
+      function updateProgress() {
+        progressFill.style.width = (((currentQ + 1) / questions.length) * 100) + '%';
+        progressText.textContent = '第 ' + (currentQ + 1) + ' / ' + questions.length + ' 题';
+        prevBtn.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+        nextBtn.textContent = currentQ === questions.length - 1 ? '看判词' : '下一题';
       }
-      return pos;
+      function renderQuestion() {
+        const q = questions[currentQ];
+        const labels = ['甲', '乙', '丙', '丁'];
+        const chapter = '第' + String(q.id).padStart(2, '0') + '题';
+        let html = '<article class="rmti-question-card" data-chapter="' + chapter + '">';
+        html += '<div class="rmti-scene">' + escapeHTML(q.scene) + '</div>';
+        html += '<p class="rmti-qtext">' + escapeHTML(q.text) + '</p>';
+        html += '<div class="rmti-options">';
+        q.options.forEach(function (opt, i) {
+          const selected = answers[currentQ] === opt.dim ? ' selected' : '';
+          html += '<button class="rmti-option' + selected + '" type="button" data-dim="' + opt.dim + '"><span class="rmti-label">' + labels[i] + '</span>' + escapeHTML(opt.text) + '</button>';
+        });
+        html += '</div></article>';
+        questionBox.innerHTML = html;
+        questionBox.querySelectorAll('.rmti-option').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            answers[currentQ] = btn.dataset.dim;
+            questionBox.querySelectorAll('.rmti-option').forEach(function (b) { b.classList.remove('selected'); });
+            btn.classList.add('selected');
+            if (currentQ < questions.length - 1) {
+              setTimeout(function () { currentQ++; renderQuestion(); }, 130);
+            }
+          });
+        });
+        updateProgress();
+      }
+      function showResult() {
+        testPage.style.display = 'none';
+        resultPage.style.display = 'block';
+        const calc = calculateResult();
+        const p = getPersonality();
+        const dimCN = { E: '闹', I: '静', N: '空', S: '象', T: '理', F: '情', J: '谨', P: '逸' };
+        const dimBars = [
+          { a: 'E', b: 'I', label: '闹 ↔ 静（能量来源）', cls: 'fill-ei' },
+          { a: 'N', b: 'S', label: '空 ↔ 象（认知方式）', cls: 'fill-ns' },
+          { a: 'T', b: 'F', label: '理 ↔ 情（判断方式）', cls: 'fill-tf' },
+          { a: 'J', b: 'P', label: '谨 ↔ 逸（处世态度）', cls: 'fill-jp' }
+        ];
+        const barsHTML = dimBars.map(function (d) {
+          const valA = calc.scores[d.a] || 0;
+          const valB = calc.scores[d.b] || 0;
+          const pctA = Math.round((valA / Math.max(valA + valB, 1)) * 100);
+          return '<div class="dim-bar"><div class="dim-label"><span>' + d.label + '</span></div><div class="dim-values"><span>' + dimCN[d.a] + ' ' + valA + '题</span><span>' + dimCN[d.b] + ' ' + valB + '题</span></div><div class="track"><div class="fill-dim ' + d.cls + '" style="width:' + pctA + '%"></div></div></div>';
+        }).join('');
+        resultContent.innerHTML =
+          '<div class="result-type"><div class="rmti-badge">警幻情榜 · 定评</div><h2>' + p.name + '</h2><p class="tags">' + p.tags + '</p></div>' +
+          '<div class="result-card"><h3>判词</h3><div class="verse">' + p.verse.replace(/\n/g, '<br>') + '</div></div>' +
+          '<div class="result-card"><h3>情榜评语（脂评·红学注）</h3><p>' + p.desc + '</p><p style="text-indent:0;color:var(--red-soft);">' + p.extra + '</p><div class="ref">学术依据：' + p.ref + '</div></div>' +
+          '<div class="result-card"><h3>情态四维度</h3><div class="dimension-bars">' + barsHTML + '</div><p style="text-indent:0;color:var(--muted);">最终情榜类型：<strong>' + dimCN[calc.ei] + '·' + dimCN[calc.ns] + '·' + dimCN[calc.tf] + '·' + dimCN[calc.jp] + '</strong> —— ' + p.name + '</p></div>' +
+          '<div class="result-card"><h3>维度心理解析</h3><p style="text-indent:0;">' + getDimensionInsight(calc.ei, calc.ns, calc.tf, calc.jp, calc.scores) + '</p></div>';
+        mountEl.querySelector('.rmti-app').scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      function start() {
+        currentQ = 0;
+        Object.keys(answers).forEach(function (key) { delete answers[key]; });
+        startPage.style.display = 'none';
+        resultPage.style.display = 'none';
+        testPage.style.display = 'block';
+        renderQuestion();
+      }
+      mountEl.querySelector('#rmti-start-btn').addEventListener('click', start);
+      mountEl.querySelector('#rmti-restart').addEventListener('click', start);
+      prevBtn.addEventListener('click', function () { if (currentQ > 0) { currentQ--; renderQuestion(); } });
+      nextBtn.addEventListener('click', function () {
+        if (!answers[currentQ]) return;
+        if (currentQ === questions.length - 1) showResult();
+        else { currentQ++; renderQuestion(); }
+      });
+      return { destroy: function () { mountEl.innerHTML = ''; }, reset: start };
     }
 
-    // ==================== SVG 形状采样 ====================
-   const svgPaths = {
+    function initMirrorApp(mountEl) {
+      mountEl.innerHTML =
+        '<div class="mirror-app"><div class="mirror-starfield" id="starfield"></div><div class="mirror-container">' +
+          '<div class="mirror-title"><h2>风月宝鉴</h2><div class="mirror-subtitle">太虚幻境 · 阴影谶纬</div><div id="modeIndicator" class="mode-indicator mode-light">正面 · 观红颜</div></div>' +
+          '<div class="canvas-wrapper" id="canvasWrapper"><canvas id="oracleCanvas" aria-label="三层谶纬星盘"></canvas></div>' +
+          '<div class="button-row"><button class="mirror-btn" id="spinBtn" type="button">转动命盘</button><button class="mirror-btn" id="mirrorBtn" type="button">照鉴反面</button><button class="mirror-btn" id="resetBtn" type="button">重绘谶纬</button></div>' +
+          '<div class="hint-text">指针所向 · 宝鉴两面 · 真幻自取</div></div>' +
+          '<div class="modal-overlay" id="modalOverlay" role="dialog" aria-modal="true"><div class="modal-panel" id="modalPanel"><div class="modal-title" id="modalTitle"></div><div class="modal-sub" id="modalSub"></div><div class="modal-combo" id="modalCombo"></div><div class="modal-section" id="modalDeconstruct"></div><div class="modal-section" id="modalDivination"></div><div class="modal-grade" id="modalGrade"></div><div style="text-align:center;"><button class="cert-btn modal-close" id="modalCloseBtn" type="button">闭目</button></div></div></div>' +
+        '</div>';
+        const INNER = ['黛玉','宝钗','元春','探春','湘云','妙玉','迎春','惜春','熙凤','巧姐','李纨','可卿'];
+  const INNER_SYMBOL = ['黛','钗','元','探','湘','妙','迎','惜','凤','巧','纨','卿'];
 
-// ❤️ 祥云心（更东方）
-0: 'M50,20 C65,5 95,20 85,45 C75,70 50,90 50,90 C50,90 25,70 15,45 C5,20 35,5 50,20 Z M50,35 C60,25 75,35 70,50 C65,65 50,75 50,75 C50,75 35,65 30,50 C25,35 40,25 50,35 Z',
+  const FLOWER_POEMS = {
+    '芙蓉':'风露清愁','牡丹':'艳冠群芳','石榴':'花开富贵','杏花':'瑶池仙品',
+    '海棠':'香梦沉酣','梅花':'冰清玉洁','菱花':'静谧淡雅','莲花':'出尘离染',
+    '菊花':'精明干练','桂花':'兰桂齐芳','兰花':'霜晓寒姿','桃花':'风流袅娜'
+  };
+  const FLOWER_ELEMENTS = {
+    '芙蓉':'水','牡丹':'土','石榴':'火','杏花':'木','海棠':'木','梅花':'水',
+    '菱花':'水','莲花':'水','菊花':'金','桂花':'金','兰花':'土','桃花':'火'
+  };
+  const OUTER_ELEMENTS = {
+    '玉带林中挂':'木','金簪雪里埋':'金','榴花开处照宫闱':'火','清明涕送江边望':'木',
+    '湘江水逝楚云飞':'水','可怜金玉质':'金','一载赴黄粱':'土','独卧青灯古佛旁':'火',
+    '哭向金陵事更哀':'金','巧得遇恩人':'土','枉与他人作笑谈':'水','造衅开端实在宁':'火'
+  };
+  const MIDDLE = ['芙蓉','牡丹','石榴','杏花','海棠','梅花','菱花','莲花','菊花','桂花','兰花','桃花'];
+  const OUTER = [
+    '玉带林中挂','金簪雪里埋','榴花开处照宫闱','清明涕送江边望',
+    '湘江水逝楚云飞','可怜金玉质','一载赴黄粱','独卧青灯古佛旁',
+    '哭向金陵事更哀','巧得遇恩人','枉与他人作笑谈','造衅开端实在宁'
+  ];
+  const PERSON_FLOWER = {
+    '黛玉':'芙蓉','宝钗':'牡丹','元春':'石榴','探春':'杏花','湘云':'海棠',
+    '妙玉':'梅花','迎春':'菱花','惜春':'莲花','熙凤':'菊花','巧姐':'桂花',
+    '李纨':'兰花','可卿':'桃花'
+  };
+  const PERSON_FLOWER_POEM = {
+    '黛玉':'莫怨东风当自嗟','宝钗':'任是无情也动人','元春':'榴花开处照宫闱',
+    '探春':'日边红杏倚云栽','湘云':'只恐夜深花睡去','妙玉':'欲洁何曾洁',
+    '迎春':'金闺花柳质','惜春':'独卧青灯古佛旁','熙凤':'凡鸟偏从末世来',
+    '巧姐':'巧得遇恩人','李纨':'枉与他人作笑谈','可卿':'造衅开端实在宁'
+  };
 
-// ⭐ 祥云星
-1: 'M50,5 L60,30 L90,30 L65,48 L75,85 L50,65 L25,85 L35,48 L10,30 L40,30 Z M50,20 L55,35 L70,35 L58,45 L63,60 L50,50 L37,60 L42,45 L30,35 L45,35 Z',
-
-// 🐉 龙（优化版）
-2: 'M10,55 C10,30 35,10 60,20 C75,25 85,35 90,30 C95,45 85,65 70,70 C60,75 65,90 50,95 C35,90 25,80 20,70 C15,65 12,60 10,55 Z M55,35 C65,30 75,35 70,45 C65,50 55,48 55,35 Z',
-
-// 🐍 灵蛇
-3: 'M30,15 C55,0 80,25 60,40 C40,55 75,70 55,85 C40,100 20,75 30,60 C40,45 15,35 30,15 Z',
-
-// 🐰 玉兔
-4: 'M50,30 C60,5 80,25 75,50 C70,75 55,85 50,85 C45,85 30,75 25,50 C20,25 40,5 50,30 Z M45,10 C45,0 55,0 55,10 C55,20 45,20 45,10 Z',
-
-// 🐟 游鱼（更灵动）
-5: 'M20,50 C20,25 75,25 80,50 C85,75 50,90 25,70 C10,60 10,40 20,50 Z M25,50 L10,40 L10,60 Z',
-
-// 🐔 鸾鸟（抽象）
-6: 'M40,35 C50,15 70,25 70,50 C70,75 55,90 50,95 C45,90 30,75 30,50 C30,25 35,20 40,35 Z',
-
-// 🌸 重瓣花
-7: 'M50,20 C70,5 90,25 75,40 C90,55 70,75 50,60 C30,75 10,55 25,40 C10,25 30,5 50,20 Z M50,30 C60,25 70,35 60,45 C70,55 60,65 50,55 C40,65 30,55 40,45 C30,35 40,25 50,30 Z',
-
-// 🦋 蝴蝶（更展开）
-8: 'M30,40 C15,15 45,5 50,35 C55,5 85,15 70,40 C85,65 55,75 50,55 C45,75 15,65 30,40 Z',
-
-// 🐴 天马（简化优雅）
-9: 'M25,55 C20,30 50,20 65,30 L85,20 L90,35 L75,45 L80,65 L65,65 L60,80 C55,90 30,80 25,55 Z',
-
-// 🐶 灵犬
-10: 'M30,45 C25,25 55,20 65,30 L80,25 L85,35 L75,45 L80,60 L65,60 L60,50 C55,65 30,65 25,55 Z',
-
-// 🐭 灵鼠
-11: 'M35,45 C35,25 60,25 60,45 C60,70 45,80 45,80 C45,80 35,65 35,45 Z M60,40 C70,35 75,45 65,50 Z',
-
-// 🐮 牛（更稳）
-12: 'M30,55 C25,30 55,30 65,40 L85,35 L90,45 L75,50 L80,65 L65,65 L60,55 C55,70 30,70 25,60 Z',
-
-// 🐯 虎（增强张力）
-13: 'M35,45 C35,25 60,25 60,45 C60,70 45,75 45,75 C45,75 35,65 35,45 Z M40,35 L50,40 L40,45 Z M50,40 L60,35 L60,45 Z',
-
-// 🐑 羊（柔和）
-14: 'M35,45 C35,25 60,25 60,45 C60,70 45,75 45,75 C45,75 35,65 35,45 Z M35,35 C25,25 35,20 40,30 Z',
-
-// 🐵 猴（灵动）
-15: 'M35,45 C35,25 60,25 60,45 C60,70 45,75 45,75 C45,75 35,65 35,45 Z M60,50 C70,55 65,65 55,60 Z',
-
+  // 阴影（枯骨）面数据
+  const SHADOW_DATA = {
+  // ---- 1. 黛玉 ----
+  '黛玉': {
+    shadow:'泪尽而亡的死亡本能',
+    archetype:'牺牲者',
+    truth:'世外仙姝，以一生之泪偿还前世之恩。枯骨之中，乃是至情至性无人能解的绝望。',
+    psyche:'过于认同“孤独才女”的人格面具，导致阴影中的死亡驱力不断积聚。',
+    hexagram:'坎为水䷜（险陷重重）→ 火水未济䷿（功未成而缘已尽）',
+    hexaInsight:'黛玉一生如水行深谷，坎卦重险之中求纯净；未济卦火在水上，阴阳失交，恰应焚稿断痴情的决绝。',
+    elementFlow:'木命遇金克，如斧斫春枝；秋水泛泛，泪干木枯。',
+    variations: [
+      '当她葬花时，其实是在提前埋葬自己。每一次落泪，都是对生命本能的缴械投降。',
+      '她的才情是一把双刃剑，割破了世俗的面纱，也割开了通往枯骨的捷径。',
+      '“质本洁来还洁去”——这不是诗，是一份提前写好的遗书。'
+    ]
+  },
+  // ---- 2. 宝钗 ----
+  '宝钗': {
+    shadow:'金簪雪埋的情感冰封',
+    archetype:'冰封者',
+    truth:'任是无情也动人，冻住的是对世界的全部热望。枯骨之下，是一个从未被真正爱过的灵魂。',
+    psyche:'“冷美人”是对内心荒芜的最巧妙掩饰。',
+    hexagram:'地山谦䷎（谦和掩锋）→ 山地剥䷖（上实下虚，层层剥落）',
+    hexaInsight:'谦卦六爻皆吉，宝钗外圆内方，事事周全；然剥卦一阳在上、五阴在下，暗示其婚姻与内心皆被虚悬。',
+    elementFlow:'金命克木却生水，荣府内她既是木（黛玉）之克星，又是水（湘云）之生源，五行俱在权衡之间。',
+    variations: [
+      '她的“冷”不是没有温度，而是把所有的热都锁进了冷香丸里。',
+      '雪洞一般的房间，住着一个早已学会不期待任何人的灵魂。',
+      '她送燕窝、赠衣裳，却从不送出自己的真心——因为那枚心早就雪藏了。'
+    ]
+  },
+  // ---- 3. 元春 ----
+  '元春': {
+    shadow:'虎兕相逢的宫闱牺牲',
+    archetype:'祭品',
+    truth:'榴花开处的荣华之下，是以骨肉为祭的深宫枯骨。大梦归时，方知繁华只是刽子手的胭脂。',
+    psyche:'“贤德妃”的光辉面具背后，是被家族众望压垮的真实自我。',
+    hexagram:'火地晋䷢（明出地上）→ 地火明夷䷣（明入地中）',
+    hexaInsight:'晋卦光明上升，省亲时如日中天；明夷卦“明入地中”，太阳西沉——正应其盛极而亡。',
+    elementFlow:'火命炽烈却无薪可继，宫墙之内以水克火（皇家之威），终被浇熄于虎兕相逢之日。',
+    variations: [
+      '省亲那夜她哭了，不是因为感动，而是因为看清了自己不过是笼中的金丝雀。',
+      '“不得见人的去处”——她早就说出了自己的命运，只是没人听懂。'
+    ]
+  },
+  // ---- 4. 探春 ----
+  '探春': {
+    shadow:'远嫁海疆的断根漂泊',
+    archetype:'流放者',
+    truth:'才自精明，却如断线风筝。清明涕送江边望，千里东风一梦遥。枯骨深处，是一个永远无法靠岸的漂泊之魂。',
+    psyche:'“庶出精英”的面具越耀眼，对“归属感”的阴影需求就越强烈。',
+    hexagram:'风天小畜䷈（蓄势未发）→ 风水涣䷺（离散之象）',
+    hexaInsight:'小畜卦以柔蓄刚，如探春理家之志；涣卦风行水上，离散四方，正应其远嫁之谶。',
+    elementFlow:'木命逢秋必凋，虽有土（贾府根基）滋养，却难敌金风肃杀——远嫁海疆，草木离根。',
+    variations: [
+      '她掌掴王善保家的，打的不是奴仆，而是那个她永远摆脱不了的庶出标签。',
+      '“我但凡是个男人，可以出得去，我必早走了”——这话里有多少次在夜里无声的嘶喊。'
+    ]
+  },
+  // ---- 5. 湘云 ----
+  '湘云': {
+    shadow:'湘江水逝的孤苦无依',
+    archetype:'孤雏',
+    truth:'襁褓之中父母违，英豪阔大之下是无尽漂流。水逝云飞，枯骨散落湘江之畔，再无亲人收殓。',
+    psyche:'用“豪爽豁达”的面具掩盖早年父母双亡的创伤。',
+    hexagram:'水雷屯䷂（始生之难）→ 雷水解䷧（险中得脱）',
+    hexaInsight:'屯卦始生艰难，应其幼年坎坷；解卦雷雨作而百果草木皆甲坼——虽得片刻酣卧，终是楚云飞散。',
+    elementFlow:'水性润下却无源，金生水（宝钗暗助），然木耗水（黛玉相吸），水尽则云消。',
+    variations: [
+      '她醉卧芍药裀，不是因为洒脱，而是因为清醒时无处可去。',
+      '每一次大笑背后，都藏着对温暖的极度饥渴。',
+      '“寒塘渡鹤影”——那是她自己的影子，孤独地掠过冰冷的水面。'
+    ]
+  },
+  // ---- 6. 妙玉 ----
+  '妙玉': {
+    shadow:'淖泥陷落的洁癖溃败',
+    archetype:'堕落者',
+    truth:'欲洁何曾洁，云空未必空。可怜金玉质，终陷淖泥中。枯骨之上，沾满世间最污浊的泥淖——那正是她一生躲避之物。',
+    psyche:'“洁净”是她最坚固的人格铠甲，但阴影中的情欲与世俗渴望越压抑越强大。',
+    hexagram:'天山遁䷠（隐退避世）→ 泽水困䷮（陷于淖泥）',
+    hexaInsight:'遁卦退隐，栊翠庵是其遁世之所；困卦泽无水、坎在下，刚掩于柔——以出尘之姿陷于最浊之命运。',
+    elementFlow:'火命孤悬，水来克火（浊世之侵），土能泄火（佛门庇护），然终被水土交战所困。',
+    variations: [
+      '她扔掉刘姥姥用过的茶杯，扔掉的其实是自己对“不洁”的恐惧。',
+      '绿玉斗给宝玉用，却不让刘姥姥碰——她的洁癖是分人的，这就是破绽。'
+    ]
+  },
+  // ---- 7. 迎春 ----
+  '迎春': {
+    shadow:'中山狼噬的懦弱祭品',
+    archetype:'牺牲品',
+    truth:'金闺花柳质，一载赴黄粱。枯骨无声，因为生前从未学会发出自己的声音。',
+    psyche:'“乖顺柔弱”的面具已与真我完全混淆，阴影中反抗的本能却被投射给了旁人。',
+    hexagram:'地雷复䷗（反复其道）→ 山地剥䷖（根基崩坏）',
+    hexaInsight:'复卦一阳初生，本有转机；然剥卦五阴剥一阳——她一次次放弃自救，直至被剥尽。',
+    elementFlow:'木命柔细，金来伐之（孙绍祖）无可避；土弱不生木（娘家无力庇护），终成枯枝。',
+    variations: [
+      '她读《太上感应篇》，不是信佛，是逃避——逃避那个不敢反抗的自己。',
+      '嫁给孙绍祖，她明知道是火坑，却连“不”字都说不出口。'
+    ]
+  },
+  // ---- 8. 惜春 ----
+  '惜春': {
+    shadow:'青灯古佛的情感隔绝',
+    archetype:'遁世者',
+    truth:'勘破三春景不长，缁衣顿改昔年妆。独卧青灯古佛旁。枯骨端坐佛前，斩断的却是全部对人间温暖的渴望。',
+    psyche:'以“出世超脱”为面具，切断与世界的全部情感联结。',
+    hexagram:'雷天大壮䷡（盛极将衰）→ 火地晋䷢（自焚明志）',
+    hexaInsight:'大壮卦势盛如贾府盛时；惜春勘破三春，以晋卦“明出地上”之穿透冷眼，自焚人情以求出路。',
+    elementFlow:'木命逢火自焚，土虽泄火（青灯古佛之庇护），然木枯火灭，终归空寂。',
+    variations: [
+      '她画大观园，画的是她想要逃离的牢笼。',
+      '她的出家不是悟道，是割席——割掉一切可能会伤害她的关系。'
+    ]
+  },
+  // ---- 9. 熙凤 ----
+  '熙凤': {
+    shadow:'哭向金陵的机关算尽',
+    archetype:'阴谋家',
+    truth:'凡鸟偏从末世来，一从二令三人木。机关算尽太聪明，反误了卿卿性命。枯骨攥紧的双手，到死也不肯松开那把权力之匙。',
+    psyche:'“精明能干”的面具背后，是对失控的深度恐惧。',
+    hexagram:'火天大有䷍（盛大丰有）→ 火雷噬嗑䷔（刑狱之象）',
+    hexaInsight:'大有卦离火在天，应其权势如日当空；噬嗑卦“利用狱”——她弄权铁槛寺、盘剥天下，终自噬其身。',
+    elementFlow:'火命炽烈克金，荣府无人能当其锋；然木生火却反被火焚（贾琏如湿木生烟），水来克火时已无人救应。',
+    variations: [
+      '她弄权铁槛寺，不是为了钱，是为了证明自己能掌控一切。',
+      '每一个被她算计的人，都在她的阴影里留下了一道债痕。'
+    ]
+  },
+  // ---- 10. 巧姐 ----
+  '巧姐': {
+    shadow:'家亡势败的侥幸逃生',
+    archetype:'幸存者',
+    truth:'势败休云贵，家亡莫论亲。偶因济刘氏，巧得遇恩人。枯骨记忆中，是家族覆灭时所有亲人的呼救声。',
+    psyche:'童年创伤将“幸存者愧疚”刻进了阴影。',
+    hexagram:'地雷复䷗（一阳来复）→ 风天小畜䷈（蓄养待发）',
+    hexaInsight:'复卦七日来复，正应巧姐七月初七生辰与劫后重生；小畜卦以阴蓄阳——刘姥姥之恩如柔风蓄养微阳。',
+    elementFlow:'木命幼细，金本克木（狠舅奸兄），然土（刘姥姥之厚德）生金化金，转克为生。',
+    variations: [
+      '她活下来了，却永远活在那个“为什么只有我”的疑问里。',
+      '刘姥姥救了她，也给了她一个全新的身份，但旧日的公府千金已死在抄家的那天。'
+    ]
+  },
+  // ---- 11. 李纨 ----
+  '李纨': {
+    shadow:'槁木死灰的生命虚无',
+    archetype:'空心人',
+    truth:'桃李春风结子完，到头谁似一盆兰。如冰水好空相妒，枉与他人作笑谈。枯骨早已在丈夫死时同葬，余生只是行尸走肉。',
+    psyche:'“贞洁寡妇”的面具成了活着的唯一理由，阴影是完全的生命虚无感。',
+    hexagram:'风水涣䷺（离散之初）→ 地天泰䷊（子贵母荣）',
+    hexaInsight:'涣卦风行水上，丈夫已散；泰卦天地交而万物通——贾兰功成名就之日，她却已成槁木。',
+    elementFlow:'木命本赖水（夫）生，水涸则木枯；以土（子）代水，勉力维持，然土多木折，终是徒劳。',
+    variations: [
+      '她教子读书，不是望子成龙，而是给自己的生活找一个还能呼吸的理由。',
+      '她住在竹篱茅舍般的稻香村，心里也是那样荒凉。',
+      '“枉与他人作笑谈”——她早就知道自己是个笑话，只是不说罢了。'
+    ]
+  },
+  // ---- 12. 可卿 ----
+  '可卿': {
+    shadow:'情天情海的欲望沉沦',
+    archetype:'纵欲者',
+    truth:'情天情海幻情身，情既相逢必主淫。造衅开端实在宁。枯骨之上缠绕的，是欲望与羞耻永远解不开的结。',
+    psyche:'“兼美”的完美形象是一个过于沉重的诅咒。',
+    hexagram:'天风姤䷫（不期而遇）→ 泽风大过䷛（本末俱弱）',
+    hexaInsight:'姤卦天下有风，其情如天风之不可遏；大过卦栋桡——承载太重而从中折断，正应其“画梁春尽落香尘”。',
+    elementFlow:'火命逢木生（情欲如薪），火旺无所制，直至自焚其室。土本泄火，然天香楼之事超越五行常理。',
+    variations: [
+      '她的房间是太虚幻境的投影，摆满了欲望的隐喻——那不是情调，是挣扎。',
+      '她托梦凤姐，是因为活着的时候已经没有人可以托付了。',
+      '“画梁春尽落香尘”——她选择死亡，不是被逼，而是累了。'
+    ]
+  }
 };
 
-// 新增：自适应采样函数。根据曲线弯曲程度智能分配采样点
-function adaptiveSamplePath(pathStr, pointCount, scale) {
-    const div = document.createElement('div');
-    div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${pathStr}" fill="white"/></svg>`;
-    document.body.appendChild(div);
-    const loader = new SVGLoader();
-    const data = loader.parse(div.querySelector('svg').outerHTML);
-    document.body.removeChild(div);
 
-    const allPoints = [];
-    data.paths.forEach(path => {
-        const shapes = path.toShapes(false);
-        shapes.forEach(shape => {
-            const curves = shape.curves;
-            curves.forEach(curve => {
-                // 自适应分段：长度越长，分段越多
-                const segments = Math.max(10, Math.floor(curve.getLength() * 2.5));
-                for (let i = 0; i <= segments; i++) {
-                    const t = i / segments;
-                    const pt = curve.getPoint(t);
-                    allPoints.push(new THREE.Vector3(
-                        (pt.x - 50) * scale / 50,
-                        -(pt.y - 50) * scale / 50,
-                        (Math.random() - 0.5) * 0.15 * scale
-                    ));
-                }
-            });
-        });
-    });
 
-    const positions = new Float32Array(pointCount * 3);
-    for (let i = 0; i < pointCount; i++) {
-        const p = allPoints[i % allPoints.length];
-        positions[i * 3] = p.x;
-        positions[i * 3 + 1] = p.y;
-        positions[i * 3 + 2] = p.z;
-    }
-    return positions;
-}
+  const WX=['金','木','水','火','土'];
 
-// 新增：增强采样函数。同时采样轮廓和内部，生成“粒子云”效果
-function sampleEnhancedSVG(pathStr, outlineRatio, count, scale) {
-    // 1. 先获得轮廓点 (使用更精细的自适应采样)
-    const div = document.createElement('div');
-    div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${pathStr}" fill="white"/></svg>`;
-    document.body.appendChild(div);
-    const loader = new SVGLoader();
-    const data = loader.parse(div.querySelector('svg').outerHTML);
-    document.body.removeChild(div);
+function wxRel(a,b){
+    const ia=WX.indexOf(a),ib=WX.indexOf(b);
+    if(ia===-1||ib===-1)return'平';
+    const d=(ib-ia+5)%5;
+    if(d===1)return'生'; if(d===2)return'克'; if(d===3)return'被生'; if(d===4)return'被克'; return'同';
+  }
 
-    const outlinePoints = [];
-    data.paths.forEach(path => {
-        const shapes = path.toShapes(false);
-        shapes.forEach(shape => {
-            const curves = shape.curves;
-            curves.forEach(curve => {
-                const segments = Math.max(15, Math.floor(curve.getLength() * 5.5));
-                for (let i = 0; i <= segments; i++) {
-                    const t = i / segments;
-                    const pt = curve.getPoint(t);
-                    outlinePoints.push(new THREE.Vector2(pt.x, pt.y));
-                }
-            });
-        });
-    });
+function wxDesc(rel,a,b){
+    if(rel==='生')return `${a}生${b}（母生子，${a}之气滋养${b}之气）`;
+    if(rel==='克')return `${a}克${b}（金伐木，${a}之性制约${b}之性）`;
+    if(rel==='被生')return `${b}生${a}（子得母气，${b}反哺${a}）`;
+    if(rel==='被克')return `${b}克${a}（外克内，${b}之气压迫${a}之气）`;
+    if(rel==='同')return `${a}同${b}（五行同气，同性相吸亦相斥）`;
+    return '五行交互不明';
+  }
 
-    // 2. 生成内部填充点 (使用更高效的命中测试)
-    const outlineCount = Math.floor(count * (outlineRatio || 0.65));
-    const innerCount = count - outlineCount;
-    const positions = new Float32Array(count * 3);
+function showLight(iI,iM,iO){
+    const person=INNER[iI],flower=MIDDLE[iM],phrase=OUTER[iO];
+    const poem=FLOWER_POEMS[flower]||'';
+    const personFlower=PERSON_FLOWER[person];
+    const matchF=flower===personFlower;
+    const matchP=OUTER[iI]===phrase;
+    const personElem=FLOWER_ELEMENTS[personFlower]||'土';
+    const flowerElem=FLOWER_ELEMENTS[flower]||'土';
+    const phraseElem=OUTER_ELEMENTS[phrase]||'土';
+    const pfRel=wxRel(personElem,flowerElem);
+    const fpRel=wxRel(flowerElem,phraseElem);
+    const ppRel=wxRel(personElem,phraseElem);
+    const shadow=SHADOW_DATA[person];
+    const hexagramInfo=shadow.hexagram||'';
+    const hexaInsight=shadow.hexaInsight||'';
+    const elementFlow=shadow.elementFlow||'';
+
+    const openings = [
+      '细观此盘，如同翻开太虚幻境簿册的一页——',
+      '静心参详，星盘所示正是警幻仙子案前之谶——',
+      '揭开盘面，薄命司中的一幅册页缓缓展开——',
+      '烛照命途，三盘交织处，隐见天机——',
+      '拨开太虚幻境的云雾，星盘所示——',
+      '三盘既止，一谶昭然——',
+      '如观宝鉴正面，眼前花影摇曳——',
+      '太虚幻境一缕香散，判词浮现——',
+      '风月宝鉴中映出此番景象——',
+      '星盘三转，谶纬自成——'
+    ];
+
+    const closings = [
+      '“假作真时真亦假，无为有处有还无。”',
+      '“好风凭借力，送我上青云。”',
+      '“世事洞明皆学问，人情练达即文章。”',
+      '“一朝春尽红颜老，花落人亡两不知。”',
+      '“玉在椟中求善价，钗于奁内待时飞。”',
+      '“满纸荒唐言，一把辛酸泪。都云作者痴，谁解其中味？”',
+      '“春梦随云散，飞花逐水流。寄言众儿女，何必觅闲愁。”',
+      '“说到辛酸处，荒唐愈可悲。由来同一梦，休笑世人痴。”',
+      '“无材可去补苍天，枉入红尘若许年。”',
+      '“好一似食尽鸟投林，落了片白茫茫大地真干净。”',
+      '“身后有余忘缩手，眼前无路想回头。”',
+      '“机关算尽太聪明，反误了卿卿性命。”',
+      '“陋室空堂，当年笏满床；衰草枯杨，曾为歌舞场。”',
+      '“因空见色，由色生情，传情入色，自色悟空。”'
+    ];
+
+    // ── 30种五行体用详细断语 ──
+    const wuxingOracles = [
+      { key:'体生用_泄气', rule:(pf)=>(pf==='生'), text:'体生用为泄气。花签之气被你本命所生——你不断给予，却忘了问自己还需不需要。提醒你：爱是溢出来的，不是掏出来的。' },
+      { key:'用生体_进益', rule:(pf)=>(pf==='被生'), text:'用生体为进益。花签滋养着你的命格，恰似春水润枯根。今日你大可放胆尝试，运势如顺水行舟，看似偶然的际遇中藏着难得的契机。' },
+      { key:'体克用_吉', rule:(pf)=>(pf==='克'), text:'体克用为吉。你的本命之气制约着花签之力——你有力量驾驭这份美好，而非被它左右。保持这份掌控力，月可一观。' },
+      { key:'用克体_凶', rule:(pf)=>(pf==='被克'), text:'用克体为不吉。花签之气正在克制你的本命，你感到力不从心。不妨承认此刻并非你掌控全局的时刻——以静制动，方为上策。' },
+      { key:'体用比和_顺', rule:(pf)=>(pf==='同'), text:'体用比和为百事顺遂。花签与命格同气相应，如同故人重逢。今日能量最为自洽，顺势而动，无需刻意。' },
+      { key:'体生用_耗散', rule:(pf)=>(pf==='生'), text:'锦上添花虽好，奈何根底已虚。你以本命之气滋养花签之美，看似繁盛，实则内耗。试着将注意力从外部收束，回到自己的内在秩序。' },
+      { key:'用生体_滋养', rule:(pf)=>(pf==='被生'), text:'花气袭人知昼暖——你的命格正被花签悄然滋养。这细微的照料不求回报，却能使你走出悬溺的暗处。宜信赖这份善意，尝试将执着轻轻放下。' },
+      { key:'体克用_主位', rule:(pf)=>(pf==='克'), text:'体克用则居于主位，如同迎春的根茎在冻土下暗自蓄力。你拥有不被花签牵引的定力，保持这份深度审慎，不被表象迷惑。' },
+      { key:'用克体_逆风', rule:(pf)=>(pf==='被克'), text:'逆风执烛，心火难安。花签之气正在挑战你长久以来维持的秩序。但这正是审视自我的契机——哪些秩序该守，哪些其实是桎梏？' },
+      { key:'体用比和_谐振', rule:(pf)=>(pf==='同'), text:'五行同气，你与花签如琴瑟和鸣。内在与外在达成暂时的和谐，情绪出现难得的松弛。珍惜这段平静，让它成为后续波折中的锚点。' },
+      { key:'木生火_文思', rule:(p,f)=>(p==='木'&&f==='火'), text:'木生火——你的本命之木催生花签之火，文思如泉涌，情感亦炽烈。小心火势过旺烧及自身，宜适时退一步，以水（冷静）调之。' },
+      { key:'火生土_沉淀', rule:(p,f)=>(p==='火'&&f==='土'), text:'火生土——燃烧过后，终将沉淀。你正在经历一场从激昂到沉稳的过渡。不必抗拒这个过程，厚德载物，土能容万物。' },
+      { key:'土生金_积累', rule:(p,f)=>(p==='土'&&f==='金'), text:'土生金——厚积薄发，正是你此刻的状态。日复一日的坚持终将凝结成金。勿急于求成，金从矿出，耗时弥久。' },
+      { key:'金生水_流转', rule:(p,f)=>(p==='金'&&f==='水'), text:'金生水——坚硬之物化为流动之形。你正在学会软化久筑的防御，让情感如水般流动。这不是软弱，是金之精华化入水中的升华。' },
+      { key:'水生木_本源', rule:(p,f)=>(p==='水'&&f==='木'), text:'水生木——回归本源，生命初始的滋养来自情感之泉。你今日宜回到让你感到安全的原点汲取力量，澄水润枯根，转机已在悄悄萌动。' },
+      { key:'木克土_破障', rule:(p,f)=>(p==='木'&&f==='土'), text:'木克土——根系穿透坚土。你正在突破长久压身的束缚，纵有钝痛，却是成长的必经之路。破土而出的那一天，阳光洒在新生的叶片上，一切都值得。' },
+      { key:'土克水_堵防', rule:(p,f)=>(p==='土'&&f==='水'), text:'土克水——你用理智之堤拦住了情感之潮。防线固然重要，但适度放水泄洪，才能避免最终的决堤。允许自己偶尔失控，也是一种勇敢。' },
+      { key:'水克火_降温', rule:(p,f)=>(p==='水'&&f==='火'), text:'水克火——以静制动，以冷制热。内心之火被外在之水平抑，你感到前所未有的冷静。虽然不够热闹，但这温度刚好适合阅读自己的心跳。' },
+      { key:'火克金_淬炼', rule:(p,f)=>(p==='火'&&f==='金'), text:'火克金——烈火炼真金。当下的磨砺并非摧毁，而是在淬炼你最重要的品质。透过痛感，你会发现自己的纯度比想象中更高。' },
+      { key:'金克木_修剪', rule:(p,f)=>(p==='金'&&f==='木'), text:'金克木——斧斫春枝，看似残忍，实则是为更茁壮的再生修剪。你正在失去某种美好的幻象，那是必要的减法，是摘掉一片早落的叶，好让新芽有光可照。' },
+      { key:'两木比和_生机', rule:(p,f)=>(p==='木'&&f==='木'), text:'木木比和——双木成林，生机盎然。你遇到了与自己频率相同的人或事，彼此呼应。珍惜这段共鸣时刻，林中的每棵树都因彼此而更挺拔。' },
+      { key:'两火比和_炽热', rule:(p,f)=>(p==='火'&&f==='火'), text:'火火比和——如双烛同燃。情感的浓度被放大，创作的冲动不可遏止。请在燃烧的同时为自己留一道防火墙，别让光芒以灼伤为代价。' },
+      { key:'两土比和_敦厚', rule:(p,f)=>(p==='土'&&f==='土'), text:'土土比和——二土成圭，厚德载物。此刻最宜深耕而非急于收获。把每件小事做好，圭臬之器，由垒土而成。' },
+      { key:'两金比和_精纯', rule:(p,f)=>(p==='金'&&f==='金'), text:'金金比和——双金相击，其声清越。你的理智与判断力正处于高效形态，不妨将这种锐利用于完善你的边界与计划。' },
+      { key:'两水比和_深邃', rule:(p,f)=>(p==='水'&&f==='水'), text:'水水比和——百川汇海，你的直觉与情感流动得比平时更加深邃。独处时会有重要感悟浮现，宜静不宜闹。' },
+      { key:'逆生_反哺', rule:(p,f)=>(p==='水'&&f==='金'), text:'金本生水，但在此盘中情势逆转——水反哺金，恩返源头。你今日可能会向一位曾帮助过你的人伸出援手，回馈的力量胜过索取。' },
+      { key:'三行交战_乱', rule:()=>(true), text:'金木水火土互有生克，局面错综复杂。此刻不宜做重大决策，静观其变，待五行之气自然流转。乱中自有秩序，需要的只是耐心。' },
+      { key:'缺金_收敛', rule:(p,f)=>(p!=='金'&&f!=='金'), text:'五行缺金，收敛之气不足。你今日可能感到边界模糊，难以果断。宜增加“拒绝”的练习，金为肃杀之气，适当的收束是对自我的保护。' },
+      { key:'缺水_枯竭', rule:(p,f)=>(p!=='水'&&f!=='水'), text:'五行缺水，润泽不足。情感的泉眼似乎有些干涸。今日宜靠近水源——不论是实际的流水，还是能滋润你心灵的人与书。' },
+      { key:'缺火_温吞', rule:(p,f)=>(p!=='火'&&f!=='火'), text:'五行缺火，热情暂伏。你在理性的冰面下藏着炽热的岩浆。不必急于燃烧，星点之火足以暖一室，慢慢来，保留住内在的温度。' }
+    ];
+
+    // ── 30种卦象启示 ──
+    const ichingOracles = [
+      { key:'乾健', template:(p)=>'乾卦之健——天行健，君子以自强不息。你当下正站在一个新的起点上，勿因花签所示之美好而忘乎所以，亦不因判词之沉而自轻。保持内在的进取力，日新其德。' },
+      { key:'坤顺', template:(p)=>'坤卦之顺——地势坤，君子以厚德载物。你正需要学会承载与包容，承载自己的不完美，包容他人的局限。柔韧之力胜于刚强。' },
+      { key:'屯始', template:(p)=>'屯卦始生——云雷屯，君子以经纶。万物始生之难，你此刻的迷茫正是成长的前奏。勿急于求成，萌芽破土需时日。' },
+      { key:'蒙昧', template:(p)=>'蒙卦启蒙——山下出泉，君子以果行育德。你正处在一个需要重新学习的阶段，带着好奇心去感知，而非带着判断去批判。' },
+      { key:'需待', template:(p)=>'需卦之待——云上于天，君子以饮食宴乐。耐心等待是最难的功课。不急，不躁，将小事做好，时机自会降临。' },
+      { key:'讼辨', template:(p)=>'讼卦之辨——天与水违行，君子以作事谋始。你内心深处正经历一场辩论，两个声音在交锋。倾听双方的声音，最终你会发现它们其实是一体两面。' },
+      { key:'师众', template:(p)=>'师卦之众——地中有水，君子以容民畜众。你宜集思广益，将周围人的善意转化为行动力。在群体中汲取力量，不必单打独斗。' },
+      { key:'比亲', template:(p)=>'比卦之亲——地上有水，先王以建万国亲诸侯。今日适合加深与他人的联结，一段真诚的关系正在萌芽。愿意被看见，是亲密的开始。' },
+      { key:'小畜_蓄', template:(p)=>'小畜卦之蓄——风行天上，君子以懿文德。你正在积蓄力量，虽然看似没有突破，实则如弓渐满。蓄力期的耐心决定了箭矢能飞多远。' },
+      { key:'履险', template:(p)=>'履卦之险——上天下泽，君子以辨上下定民志。你正走在险途之上，如履虎尾，小心谨慎便是最好的护身符。宜低姿态，不宜高调行事。' },
+      { key:'泰通', template:(p)=>'泰卦之通——天地交而万物通，上下交而其志同。你正处在一个畅通的状态中，此时最适合开诚布公，与人分享。通透的状态不会持续太久，珍惜当下。' },
+      { key:'否塞', template:(p)=>'否卦之塞——天地不交而万物不通。你感到阻隔无处不在，言语难以抵达对方耳中。此时不宜强行突破，退而修德是唯一出路。' },
+      { key:'同人_合', template:(p)=>'同人卦之合——天与火，君子以类族辨物。你正在寻找志同道合之人，而那个人可能已经在不远处了。打开你的感官，同类之间的引力无需刻意。' },
+      { key:'大有_丰', template:(p)=>'大有卦之丰——火在天上，君子以遏恶扬善。你拥有一份相当珍贵的禀赋或机缘，它值得被谨慎对待。富有时最易失足，请务必将这份珍视化为每日的微行。' },
+      { key:'谦卑', template:(p)=>'谦卦之卑——地中有山，君子以裒多益寡。你正处在谦卑的力量中，虽不高调，却稳如磐石。真正的力量从不喧哗。' },
+      { key:'豫备', template:(p)=>'豫卦之备——雷出地奋，君子以作乐崇德。你内心有一件长久悬搁的事，此刻可以开始动身了。哪怕只是迈出第一步，豫备之力已然形成。' },
+      { key:'随顺', template:(p)=>'随卦之顺——泽中有雷，君子以向晦入宴息。顺势而动，不为难自己。这股随顺的能量来自你对不确定性的接纳，而非对命运的屈服。' },
+      { key:'蛊乱', template:(p)=>'蛊卦之乱——山下有风，君子以振民育德。你目前的状态存在一些混乱。但这恰是拨乱反正的时机，旧壳不碎裂，新机如何出？' },
+      { key:'临观', template:(p)=>'临卦之观——泽上有地，君子以教思无穷。你宜站在高处俯视全局，而非陷在草木之间。临观之眼能让你看到那些被忽略的连接。' },
+      { key:'观照', template:(p)=>'观卦之照——风行地上，先王以省方观民设教。你正在观察与被观察之间。观察的是世态，被观察的是内心。让这双重的视线清澈如初。' },
+      { key:'噬嗑_断', template:(p)=>'噬嗑卦之断——雷电噬嗑，先王以明罚敕法。你面临一个需要做出果断抉择的节点。犹豫已然消散，吞下这口硬物，它将成为你身体的一部分。' },
+      { key:'贲饰', template:(p)=>'贲卦之饰——山下有火，君子以明庶政无敢折狱。你正在用某种方式装饰自己的内在世界。外在的修饰无妨，但请确保内在的火光不曾熄灭。' },
+      { key:'剥落', template:(p)=>'剥卦之落——山附于地，上以厚下安宅。一层层褪去旧日的自我保护机制，露出更为真实的质地。虽显不设防，却暗蓄沉厚之力。' },
+      { key:'复归', template:(p)=>'复卦之归——雷在地中，先王以至日闭关。七日来复，万物归根。你回到了某个始点。这不是退化，而是为了重新出发而做的蓄力。' },
+      { key:'无妄_真', template:(p)=>'无妄卦之真——天下雷行，物与无妄。摒弃多余的念头，回归事物本来的样子。纯粹的当下不需要任何修饰或期待。' },
+      { key:'大畜_藏', template:(p)=>'大畜卦之藏——天在山中，君子以多识前言往行。你正在大量吸收信息或能量，表面看似静止，内在却是饱满的张力。请珍视这段暗哑的蓄力期。' },
+      { key:'颐养', template:(p)=>'颐卦之养——山下有雷，君子以慎言语节饮食。好好照顾自己的身体与情绪，这是目前最重要的事。自我关怀不是自私，是生存的基础。' },
+      { key:'大过_折', template:(p)=>'大过卦之折——泽灭木，君子以独立不惧。你在承受超越常规的压力，栋梁在吱呀作响。独立是你唯一的武器，不惧是你最坚固的铠甲。' },
+      { key:'坎陷', template:(p)=>'坎卦之陷——水洊至，君子以常德行习教事。你正经历一次深刻的低谷。不要急于爬出，坑底的黑暗蕴藏着最纯粹的水源，它将濯去你经年的积尘。' },
+      { key:'离明', template:(p)=>'离卦之明——明两作，大人以继明照于四方。你的内在之光正在续燃。一段明亮的精神时期已经开始，适合表达、书写与照亮他人。' }
+    ];
+
+    // ── 30种今日整合指引 ──
+    const integrations = [
+      '把盘中最触动你的那一个词，写在一张纸上，放在枕边。明日醒来再看它一眼。',
+      '今天找一杯茶的时间，什么都不做，只是看着窗外。哪怕只有五分钟。',
+      '对最近一直默默支持你的一个人，说出那句你一直想说的感谢。',
+      '写下你此刻最想逃避的那件事，然后问自己：它在害怕什么？',
+      '允许自己今天不太完美。让一件小事出错，然后轻轻地原谅自己。',
+      '找到一处你可以独处的小角落，在那里完整地呼出一口气。',
+      '画一条线，左边是你正在给予的，右边是你正在接收的。然后看看哪边更长。',
+      '拾起一件你很久没做的事，不为结果，只为过程。哪怕只是翻开一本旧书。',
+      '用一首诗来描述你今天的心情。不需要押韵，只需要真实。',
+      '找到一处让你感到安全的地方，闭上眼，想象自己是一棵树，根须深入大地。',
+      '把盘中的判词改写成一封写给你自己的信。它会告诉你什么？',
+      '今天主动对一个人微笑，不为任何目的，只为了看到那个笑容的回声。',
+      '列出三件你已经完成却从未真正庆祝过的事。今天为它们干杯。',
+      '给未来的自己写一张明信片，只写一句话，然后收进抽屉里。',
+      '观察你今天喝的第一口水的温度，感受它如何从口中流入体内。',
+      '把你今天听到的最触动你的一句话记录下来，哪怕来自陌生人。',
+      '关掉屏幕三十分钟，用这三十分钟做一件你一直推迟的小事。',
+      '对你内心深处那个一直不敢说话的部分说：你可以出来了，这里很安全。',
+      '把“应该”这个词从今天的所有对话中剔除，试着替换成“可以”。',
+      '找到一面镜子，看着自己的眼睛，对自己说一句鼓励的话，不要移开视线。',
+      '今天尝试用一种新的方式走一段你经常走的路，留意之前忽略的细节。',
+      '回忆一个让你感到骄傲的瞬间，重新让自己沉浸在那个体验里。',
+      '将你担心的事写在纸上，与纸保持一臂的距离，看着它。看着它在纸上的样子，或许并不如想象中那么庞大。',
+      '今天检查一下你的边界：有哪些“是”其实是“否”？勇敢地说一次“不”。',
+      '找一首红楼的曲子放着，什么也不做，只是让它流过你的耳朵与脊背。',
+      '在今日的某个时刻，做一个完全利己的决定，不为任何人的期待，只为你自己。',
+      '翻阅你这几日的转盘记录，看看是否有重复的图案在试图告诉你同一件事。',
+      '采一朵花或拾一片叶，夹在常翻的书页里。下次不经意翻到，它会提醒你此刻的体悟。',
+      '选择一个你正在纠结的问题，掷一枚硬币。在硬币落下之前，注意你心底希望它是哪一面——它已告诉你真正的答案。',
+      '把谶语中最刺眼的那行字，用毛笔或手写体誊抄一遍，然后在末尾补上一句你自己的批注。'
+    ];
+
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+    // 选取匹配当前五行关系的体用断语
+    const applicableWx = wuxingOracles.filter(function(wx) { return wx.rule(pfRel, personElem, flowerElem); });
+    const wxOracle = applicableWx.length > 0 ? pick(applicableWx).text : '五行之气平和流转，生克之间自有深意。你今日的内在能量正处在一个微妙的平衡点，宜静不宜动，宜观不宜断。';
     
-    // 填充轮廓点
-    for (let i = 0; i < outlineCount; i++) {
-        const p = outlinePoints[i % outlinePoints.length];
-        positions[i * 3] = (p.x - 50) * scale / 50;
-        positions[i * 3 + 1] = -(p.y - 50) * scale / 50;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15 * scale;
+    // 额外选取第二句五行断语（选不同规则或条件的）
+    let wxOracle2 = '';
+    const restWx = wuxingOracles.filter(function(wx) { return !wx.rule(pfRel, personElem, flowerElem); });
+    if (restWx.length > 0) {
+      wxOracle2 = pick(restWx).text;
     }
 
-    // 填充内部点 (通过包围盒和Canvas命中测试)
-    if (innerCount > 0) {
-        const canvas = document.createElement('canvas');
-        canvas.width = 100; canvas.height = 100;
-        const ctx = canvas.getContext('2d');
-        const path2D = new Path2D(pathStr);
-        
-        for (let i = 0; i < innerCount; i++) {
-            let x, y, attempts = 0;
-            do {
-                x = 10 + Math.random() * 80; // 在可能的包围盒内随机
-                y = 10 + Math.random() * 80;
-                attempts++;
-            } while (!ctx.isPointInPath(path2D, x, y) && attempts < 100);
-            
-            const idx = outlineCount + i;
-            positions[idx * 3] = (x - 50) * scale / 50;
-            positions[idx * 3 + 1] = -(y - 50) * scale / 50;
-            positions[idx * 3 + 2] = (Math.random() - 0.5) * 0.25 * scale;
+    const ichOracle = pick(ichingOracles).template(person);
+    const integration = pick(integrations);
+    const opening = pick(openings);
+    const closing = pick(closings);
+
+    // ── 生成五行动态文本 ──
+    function elementDynamic(pElem, fElem, phElem, pfRel, fpRel, ppRel) {
+      const dynamicParts = [];
+      if (pfRel==='生') dynamicParts.push(`${pElem}命生${fElem}花，如母育子，天性相合——然而花之${fElem}性终将与判词之${phElem}气交争。`);
+      if (pfRel==='克') dynamicParts.push(`${fElem}花克${pElem}命，本命受花签所制，犹如逆风执烛，心火难安。`);
+      if (pfRel==='被生') dynamicParts.push(`${fElem}花反哺${pElem}命，此花非正配却暗送滋养，看似偏移，实则暗藏生机。`);
+      if (pfRel==='被克') dynamicParts.push(`${pElem}命克${fElem}花，本命压制花签之气——你在不自觉中排斥着本该属于你的某种美好。`);
+      if (fpRel==='生') dynamicParts.push(`花生判词：${fElem}气滋养${phElem}气，花签之光正照亮判词所指向的命运路径。`);
+      if (fpRel==='克') dynamicParts.push(`花克判词：${fElem}与${phElem}相战，花签之美与判词之谶彼此抵牾，命途因此布满张力。`);
+      if (ppRel==='生') dynamicParts.push(`命生判词：${pElem}命格不息地催生着${phElem}之气——你的每一步选择都在加深与判词的连结。`);
+      if (ppRel==='克') dynamicParts.push(`判克本命：${phElem}气正压抑${pElem}命——外来的命运之力正在左右你的航线，宜静观其变。`);
+      return dynamicParts.length>0 ? dynamicParts.join(' ') : '五行之气平和流转，无显胜负。';
+    }
+    const dynamicText = elementDynamic(personElem, flowerElem, phraseElem, pfRel, fpRel, ppRel);
+
+    let title='', grade='', gradeCls='', deconstruct='', divination='';
+
+    if(matchF&&matchP){
+      title='三才归位 · 正谶'; grade='大吉 · 命数天成'; gradeCls='grade-ji';
+      deconstruct = `【命盘解构】天盘（判词）、地盘（花签）、人盘（金钗）三才合一。${
+        person}之本命花「${flower}」正配其魂，判词「${phrase}」精准道破其运。\n【易象演卦】${
+        hexagramInfo ? '本命卦象：'+hexagramInfo : ''}\n【五行动态】${dynamicText}\n【命局气运】${
+        elementFlow ? elementFlow : ''}`;
+      divination = `${opening} ${person}之本命花「${flower}」与判词「${phrase}」全然相合，此乃太虚幻境薄命司正册确载之命。花签云"${poem}"，其性${flowerElem}，与${person}命格之${personElem}${
+        pfRel==='生'?'相生相济，如鱼得水':'互为表里'}，暗示此生轨迹早在警幻仙子案前写明。${
+        pfRel==='生'?`${personElem}生${flowerElem}，命格生花，然而${person}偏以${flowerElem}之性对抗命定，终被${phraseElem}之判所收——这正是"无可奈何花落去"的五行注脚。`:''}${
+        fpRel==='克'?`更值关注：${flowerElem}克${phraseElem}，花签之性克判词之气，暗示${person}一生都在以本命之花抵御既定的谶语——然而终归徒劳。`:''}正位显现，宜认命顺势，反得自在。\n\n【五行体用】${wxOracle}\n\n【易理启示】${ichOracle}\n\n【今日整合】${integration}\n\n${closing}`;
+    }else if(matchF&&!matchP){
+      title='花开本命 · 旁谶偏移'; grade='半吉 · 花正途歧'; gradeCls='grade-banji';
+      const phrasePerson=INNER[OUTER.indexOf(phrase)];
+      deconstruct = `【命盘解构】人盘${person}得本命花「${flower}」正配，然天盘判词「${phrase}」本当属${phrasePerson}，今旁落${person}之侧。\n【易象演卦】${
+        hexagramInfo ? '本命卦象：'+hexagramInfo : ''}\n【五行动态】${dynamicText}\n【命局气运】${
+        elementFlow ? elementFlow : ''}`;
+      divination = `${opening} ${person}虽得本命花开，然判词却被${phrasePerson}之谶侵入，此即《红楼梦》中"钗黛合一"笔法的微观投射——两个人的命运被写在同一首判词里。${
+        fpRel==='克'?`尤其${flowerElem}克${phraseElem}，花签之气压制外来谶纬，短期内${person}或可凭借本命之力抵御旁谶侵蚀，但长远看，外来谶纬的${phraseElem}性会逐渐渗透。`:''}${
+        pfRel==='生'?`所幸${personElem}生${flowerElem}，命格生花，根基尚固。`:'五行之间互有制衡，局势微妙。'}生活中若见此盘，当警惕：你是否正活在他人命运的阴影里？明辨何为"我之命"，何为"人之谶"，方能不被旁谶牵引。\n\n【五行体用】${wxOracle}\n\n【易理启示】${ichOracle}\n\n【今日整合】${integration}\n\n${closing}`;
+    }else if(!matchF&&matchP){
+      title='谶正花移 · 镜花水月'; grade='半吉 · 谶真花幻'; gradeCls='grade-banji';
+      const flowerPerson=INNER[MIDDLE.indexOf(flower)];
+      deconstruct = `【命盘解构】天盘判词「${phrase}」确属${person}本命之谶，然地盘花签「${flower}」本当配${flowerPerson}，今飘落${person}命盘。\n【易象演卦】${
+        hexagramInfo ? '本命卦象：'+hexagramInfo : ''}\n【五行动态】${dynamicText}\n【命局气运】${
+        elementFlow ? elementFlow : ''}`;
+      divination = `${opening} ${person}命宫虽然判词清晰，却伴随着${flowerPerson}之花影。此乃"花非花"之境——花签「${flower}」属${flowerElem}，与${person}本命${personElem}${
+        pfRel==='克'?'相克，花非但无助，反成拖累':'相生，却非正位，如同借来的美丽'}，暗示人生旅途中将出现一段"不是我的"身份体验。${
+        ppRel==='克'?`尤其${personElem}克${phraseElem}，命格与判词相克，${person}一生都在对抗自己既定的终点。这种对抗本身，就是悲剧的源头。`:''}${
+        pfRel==='被克'?`更值得注意的是，${flowerElem}克${personElem}——外来之花克制本命之气，${person}在他人之花的影响下，或将经历身份错位的迷茫。`:''}然而判词终究是${person}自己的谶纬，终点已定，沿途风景不妨借观。\n\n【五行体用】${wxOracle}\n\n【易理启示】${ichOracle}\n\n【今日整合】${integration}\n\n${closing}`;
+    }else{
+      title='太虚幻影 · 草蛇灰线'; grade='慎 · 伏脉千里'; gradeCls='grade-xiong';
+      const phrasePerson=INNER[OUTER.indexOf(phrase)];
+      const flowerPerson=INNER[MIDDLE.indexOf(flower)];
+      const rels=[];
+      if(pfRel==='生')rels.push(`${personElem}生${flowerElem}，命生花如甘霖`);
+      if(pfRel==='克')rels.push(`${flowerElem}克${personElem}，花克命如霜雪`);
+      if(fpRel==='生')rels.push(`${flowerElem}生${phraseElem}，花生判为外援`);
+      if(fpRel==='克')rels.push(`${flowerElem}克${phraseElem}，花克判为内外交困`);
+      if(ppRel==='生')rels.push(`${personElem}生${phraseElem}，命生判，运中有救`);
+      if(ppRel==='克')rels.push(`${phraseElem}克${personElem}，判克命，劫数深重`);
+      const relText=rels.length>0?rels.join('；'):'五行平和，无显生克';
+      deconstruct = `【命盘解构】三盘皆非本位：人盘${person}、地盘花「${flower}」（本属${flowerPerson}）、天盘判词「${phrase}」（本属${phrasePerson}）。\n【易象演卦】${
+        hexagramInfo ? '本命卦象：'+hexagramInfo : ''}\n【五行动态】${dynamicText}\n【命局气运】${
+        elementFlow ? elementFlow : ''}`;
+      divination = `${opening} 三盘皆非本位，构成极罕见的"太虚幻影"格局。${person}、${flowerPerson}、${phrasePerson}的命运丝线在此缠绕——这正是脂砚斋所批"草蛇灰线，伏脉千里"的缩影。${
+        ppRel==='克'?`尤其警醒：${phraseElem}克${personElem}——外来的判词之气正在克制${person}的本命之气，若不能清醒觉察，恐将活成他人命运中的配角。`:''}面对此盘，不必惊慌。它提示你：你的人生剧本里，藏着许多他人故事的伏笔。\n\n【五行体用】${wxOracle}\n\n【易理启示】${ichOracle}\n\n【今日整合】${integration}\n\n${closing}`;
+    }
+
+    modalPanel.className='modal-panel';
+    modalTitle.textContent=title; modalSub.textContent=`${person} · ${flower} · ${poem}`;
+    modalCombo.innerHTML=`<span class="combo-item">${person}</span><span class="combo-arrow">⟡</span><span class="combo-item">${flower}</span><span class="combo-arrow">⟡</span><span class="combo-item">${phrase}</span>`;
+    modalDeconstruct.textContent=deconstruct;
+    modalDivination.textContent=divination;
+    modalGrade.textContent=grade; modalGrade.className='modal-grade '+gradeCls;
+    modalOverlay.classList.add('active'); spawnBurst();
+}
+
+function showShadow(iI,iM,iO){
+    const person=INNER[iI],flower=MIDDLE[iM],phrase=OUTER[iO];
+    const shadow=SHADOW_DATA[person];
+    const poem=FLOWER_POEMS[flower]||'';
+    const personFlower=PERSON_FLOWER[person];
+    const personElem=FLOWER_ELEMENTS[personFlower]||'土';
+    const flowerElem=FLOWER_ELEMENTS[flower]||'土';
+    const phraseElem=OUTER_ELEMENTS[phrase]||'土';
+    const pfRel=wxRel(personElem,flowerElem);
+
+    const shadowVariant = shadow.variations
+        ? shadow.variations[Math.floor(Math.random() * shadow.variations.length)]
+        : shadow.psyche;
+
+    const hexagramInfo = shadow.hexagram || '';
+    const elementFlow = shadow.elementFlow || '';
+
+    // ── 30 种阴影五行激活分析 ──
+    const shadowElementPool = [
+      { cond:(p,f,r)=>r==='克', text:'你越是排斥什么，什么就越会成为你的枷锁。' },
+      { cond:(p,f,r)=>r==='克', text:'你害怕失控，于是试图掌控一切，却不知这种掌控本身就是最大的失控。' },
+      { cond:(p,f,r)=>r==='生', text:'你以善意滋养众生，却忘了留一点滋养给自己。' },
+      { cond:(p,f,r)=>r==='生', text:'你输出的温暖并非无穷无尽。请检查还有多少余火，能否熬过这个冬天。' },
+      { cond:(p,f,r)=>r==='被克', text:'你本可以驾驭这股能量，却选择了回避。回避不是保护自己，而是让阴影在暗处发酵。' },
+      { cond:(p,f,r)=>r==='被克', text:'有什么外部影响正在侵入你的自我边界。请仔细辨认：这是谁的声音？是你？是他人的期待？还是旧日的鬼魂？' },
+      { cond:(p,f,r)=>r==='被生', text:'阴影正被你无意识地喂养着。每当你沉溺于某种舒适区，阴影就在底下又扩张了一寸。' },
+      { cond:(p,f,r)=>r==='被生', text:'滋养你的事物，也可能正在吞噬你的另一种可能性。请审视：这股补给是否在让你变得单一？' },
+      { cond:(p,f,r)=>r==='同', text:'你与阴影互为镜像——你笑，它也笑；你哭，它也哭。你无法摆脱它的注视，但你可以停止恐惧它的存在。' },
+      { cond:(p,f,r)=>r==='同', text:'本命与花签同气相应。你无法推开它，因为推开它就是在推开你自己。或许，此刻该试着接受这个不完美的共生物。' },
+      { cond:(p,f,r)=>true, text:'五行之气缠绕着你的阴影，如同藤蔓攀附古树。那些你不敢触碰的记忆正在枝叶间窸窣作响。' },
+      { cond:(p,f,r)=>true, text:'你的心理防线正在经历一场无声的地震。震源不在外界，而在你长久忽视的内心裂隙。' },
+      { cond:(p,f,r)=>true, text:'每一次你强压下去的愤怒，都在暗处积蓄力量。它们终有一天会以你意想不到的方式喷涌而出。' },
+      { cond:(p,f,r)=>true, text:'你把自己包装得太过完美，以至于连自己也分不清哪个是面具，哪个是真实的面孔。' },
+      { cond:(p,f,r)=>true, text:'那些被你定义为"过去"的伤痛，其实从未离开。它们只是换了一件衣服，蹲在你记忆的角落里。' },
+      { cond:(p,f,r)=>true, text:'你的恐惧不是敌人，而是一个忠诚的守卫——守着你最柔软的地方，寸步不离。' },
+      { cond:(p,f,r)=>true, text:'花签对你而言，不是命定的祝福，而是一面镜子。镜中映出的不是你渴望成为的样子，而是你不敢承认的那个自己。' },
+      { cond:(p,f,r)=>true, text:'请为这股被压抑的力量命名。一旦有了名字，它就不再是无名的黑暗，而是一个可以被理解的存在。' },
+      { cond:(p,f,r)=>true, text:'阴影不会因为光明的到来而消失，但它会因为被看见而不再具有威胁。' },
+      { cond:(p,f,r)=>true, text:'你今天所使用的防御机制，很可能是一个幼年时期的你学会的策略。它曾经救过你，但现在或许不再有必要。' }
+    ];
+
+    const applicableShadow = shadowElementPool.filter(function(s) { return s.cond(personElem, flowerElem, pfRel); });
+    const shadowElementText = applicableShadow.length > 0 
+        ? pickArr(applicableShadow).text 
+        : '五行交错，阴影以不可名状的方式纠缠着本命。你需要停下来，仔细感受这股暗流。';
+
+    // ── 30 种阴影整合指引 ──
+    const shadowIntegrations = [
+      '对镜自问：我最不愿承认的那个自己，究竟在害怕什么？',
+      '写下你一直想说却不敢说的那句话，然后在纸的背面，写下你害怕它成真的原因。',
+      '今天花十分钟，不做任何事，只是静静地坐在那里，感受内心涌动的不安。让它流过你，但不要被它裹挟。',
+      '找一个可以信任的人，告诉他/她一件你从未对任何人说过的事。不是忏悔，是分享。',
+      '把你在镜中所见的枯骨，画成一颗种子。埋下去，它在黑暗中需要时间，但它在生长。',
+      '请回想：你是从什么时候开始，学会用现在的这副面具示人的？那个最初的你，是什么样的？',
+      '你一直逃避的那件事，其实一直在等你。今天，试着朝它走一步，只是一步。',
+      '对自己说：我不需要完美，也可以被爱。重复三遍。',
+      '阴影的馈赠是：它让你成为一个有厚度的人。如果你从未受过伤，你就永远无法真正理解别人的苦痛。',
+      '不要试图消灭阴影，试着和它谈判。你对它提出什么条件，它才会停止对你的侵扰？',
+      '回忆一次你被否定的经历——不是你的错，但那种感受还在。试着以成年的你，对当时的自己说一句话。',
+      '人格面具是一座堡垒，阴影是堡垒地下的暗河。今天，打开一次通往暗河的密道，只是去看一眼，不做任何干预。',
+      '你的人生中，有哪些是为了取悦他人而活的部分？今天，暂停其中一个，看看世界是否会崩塌。（它不会）',
+      '听一首不带歌词的音乐，让它只流过你的情绪，不被任何语言定义。',
+      '盘中的判词是你阴影的符号。把它拆解：每一个字单独看，它们还那么可怕吗？',
+      '观察你今天的情绪波动：是什么让它起伏？不是去评判，只是去标注。',
+      '原谅自己一次。不是原谅曾经的错误，而是原谅自己至今无法成为另一个人。',
+      '镜中所照只是当下的影子，而非全部的你。今天的提醒：你比你的恐惧更庞大。',
+      '你越是试图摆脱某个特质，它越会成为你的阴影。今天试着说出：是的，我也有这一面。',
+      '在睡前，问自己一个问题：今天我为自己的阴影做了些什么？是压制？是接纳？是释放？只是观察，不须批判。',
+      '你心中那个不安静的部分，是你人格中最有生命力的部分。不要让它闭嘴，试着重新翻译它发出的密语。',
+      '将盘中最令你不安的一句话，用一种艺术的形式表达出来——哪怕只是一段破碎的旋律或几笔杂乱的涂鸦。',
+      '你一直在打造的“正常”铠甲，已经有多久没有取下来清洗了？今天给它一道缝隙，透透气。',
+      '找一片落叶或一块小石头，对它说一句你从未敢说出口的话，然后把它放在一处安宁之地。',
+      '你一生在逃避的，其实是你自己最深的潜能。它之所以在阴影里等待，是因为它太强大，强大到曾经吓到了年幼的你。',
+      '把今天的阴影想象成一个许久未见的故人，为它备一杯茶，静静坐一会儿，不必交谈。',
+      '有些自我评判，已经跟随你太久了。今天选出其中最陈旧的一条，问问自己：这是否还是我的声音？',
+      '消极情绪是你内在最深处的信使，它携带着关于你真实需求的情报。不要攻击信使，试着拆开那封信。',
+      '想象你的阴影从一个瘦弱恐惧的孩童，成长为一位能保护你的守护者——把这个意象画在纸上，或记在心间。',
+      '谶纬所显正是面具所掩。今天做一件很小的事，去打破某个别人对你习以为常的设定——哪怕只是换一种坐姿，或者选择一条陌生的路线。'
+    ];
+
+    function pickArr(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    const shadowIntegration = pickArr(shadowIntegrations);
+    const secondaryShadowIntegration = pickArr(shadowIntegrations.filter(function(s) { return s !== shadowIntegration; }));
+    // 随机决定用哪个整合指引（或两个都用）
+    const finalShadowIntegration = Math.random() > 0.5 ? shadowIntegration : shadowIntegration + '\n' + secondaryShadowIntegration;
+
+    const title='💀 风月宝鉴 · 反面';
+    const grade='警示 · 照见枯骨';
+    const gradeCls='grade-xiong';
+
+    let deconstruct = `【枯骨显现】你翻过了风月宝鉴，看到了${person}不可示人的那一面。原著第十二回，跛足道人赠镜于贾瑞："这物出自太虚幻境空灵殿上，警幻仙子所制，专治邪思妄动之症——只可照反面，不可照正面。"正面是凤姐的幻影（欲望投射），反面立着一具骷髅（真实本质）。${
+      hexagramInfo ? '\n\n【易象倒悬】风月宝鉴翻转之际，卦象亦随之颠倒——'+hexagramInfo+'。卦本无言，人自取象。你所见的枯骨，正是这卦象中最暗的一爻。' : ''
+    }`;
+
+    let divination = `【阴影原型】荣格说："与其做好人，我宁愿做一个完整的人。"${
+      person}的人格面具是"${personFlower}——${FLOWER_POEMS[personFlower]}"，而其阴影却是："${shadow.shadow}"。人格面具与阴影如镜之两面——一面向着世界微笑，一面在黑暗中试图呼吸。\n\n【红学原型】${shadow.truth}\n\n【心理投射】${shadowVariant}\n\n【五行阴影分析】${shadowElementText}${
+      elementFlow ? '\n\n【命局倒映】'+elementFlow : ''
+    }\n\n【今日盘中显影】花签「${flower}」（五行${flowerElem}）与判词「${phrase}」（五行${phraseElem}）交织出现，这正是阴影投射的轨迹。${
+      flower!==personFlower?`花非本命（${personFlower}），表明阴影已在${MIDDLE.indexOf(flower)>=0?INNER[MIDDLE.indexOf(flower)]:'他人'}的印记中找到了出口。`: `本命花现于反面——阴影已浮出意识水面，正呼唤被正视。`}${
+      OUTER[iI]!==phrase?`判词错位，表明命运的阴影正在以伪装的形式影响着${person}的生命轨迹。`: `判词正对——阴影直面本心，这是最危险也最具转化潜能的时刻。`}\n\n【整合指引】${finalShadowIntegration}`;
+
+    modalPanel.className='modal-panel dark';
+    modalTitle.textContent=title; modalSub.textContent=`${person} · 阴影之面 · ${shadow.archetype}`;
+    modalCombo.innerHTML=`<span class="combo-item">${person}</span><span class="combo-arrow">⟡</span><span class="combo-item">${flower}</span><span class="combo-arrow">⟡</span><span class="combo-item">${phrase}</span>`;
+    modalDeconstruct.textContent=deconstruct;
+    modalDivination.textContent=divination;
+    modalGrade.textContent=grade; modalGrade.className='modal-grade '+gradeCls;
+    modalOverlay.classList.add('active'); spawnBurst(true);
+}
+
+      let innerAngle = 0, midAngle = 0, outerAngle = 0;
+      let innerVel = 0, midVel = 0, outerVel = 0;
+      let isSpinning = false, mirrorMode = false;
+      const spinDecay = 0.975;
+      let canvas, ctx, dpr, centerX, centerY, radius, rafId = 0;
+      const canvasWrapper = mountEl.querySelector('#canvasWrapper');
+      const spinBtn = mountEl.querySelector('#spinBtn');
+      const mirrorBtn = mountEl.querySelector('#mirrorBtn');
+      const resetBtn = mountEl.querySelector('#resetBtn');
+      const modalOverlay = mountEl.querySelector('#modalOverlay');
+      const modalPanel = mountEl.querySelector('#modalPanel');
+      const modalTitle = mountEl.querySelector('#modalTitle');
+      const modalSub = mountEl.querySelector('#modalSub');
+      const modalCombo = mountEl.querySelector('#modalCombo');
+      const modalDeconstruct = mountEl.querySelector('#modalDeconstruct');
+      const modalDivination = mountEl.querySelector('#modalDivination');
+      const modalGrade = mountEl.querySelector('#modalGrade');
+      const modalCloseBtn = mountEl.querySelector('#modalCloseBtn');
+      const modeIndicator = mountEl.querySelector('#modeIndicator');
+      const starfieldDiv = mountEl.querySelector('#starfield');
+      function createStarfield() {
+        starfieldDiv.innerHTML = '';
+        for (let i = 0; i < 72; i++) {
+          const d = document.createElement('div');
+          d.className = 'star-dust';
+          const s = 1 + Math.random() * 2.8;
+          d.style.width = s + 'px';
+          d.style.height = s + 'px';
+          d.style.left = Math.random() * 100 + '%';
+          d.style.top = 40 + Math.random() * 60 + '%';
+          d.style.animationDuration = 10 + Math.random() * 18 + 's';
+          d.style.animationDelay = Math.random() * 12 + 's';
+          starfieldDiv.appendChild(d);
         }
-    }
-
-    return positions;
-}
-
-    function sampleSVGPath(pathStr, count, scale) {
-      const div = document.createElement('div');
-      div.innerHTML =
-        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="${pathStr}" fill="white"/></svg>`;
-      document.body.appendChild(div);
-      const loader = new SVGLoader();
-      const data = loader.parse(div.querySelector('svg').outerHTML);
-      document.body.removeChild(div);
-
-      const allPoints = [];
-      data.paths.forEach(path => {
-        const shapes = path.toShapes(false);
-        shapes.forEach(shape => {
-          const pts = shape.getSpacedPoints(Math.ceil(count / data.paths.length));
-          pts.forEach(p => allPoints.push(new THREE.Vector3(
-            (p.x - 50) * scale / 50,
-            -(p.y - 50) * scale / 50,
-            (Math.random() - 0.5) * 0.15 * scale
-          )));
-        });
-      });
-
-      const positions = new Float32Array(count * 3);
-      for (let i = 0; i < count; i++) {
-        const p = allPoints[i % allPoints.length];
-        positions[i * 3] = p.x;
-        positions[i * 3 + 1] = p.y;
-        positions[i * 3 + 2] = p.z;
       }
-      return positions;
-    }
-
-    // 预生成所有形状数据（使用新的采样逻辑）
-const shapes = [];
-for (let i = 0; i < 16; i++) {
-    // 使用增强采样，轮廓占比65%
-    shapes.push(sampleEnhancedSVG(svgPaths[i], 0.65, MAIN, SHAPE_SCALE));
-}
-
-    // ==================== 颜色 ====================
-    function galaxyColor(dist, maxR) {
-      const t = Math.min(dist / maxR, 1);
-      const a = new THREE.Color('#fff8e7'),
-        b = new THREE.Color('#ffb347');
-      const c = new THREE.Color('#9966cc'),
-        d = new THREE.Color('#4466aa');
-      if (t < 0.15) return a.clone().lerp(b, t / 0.15);
-      if (t < 0.5) return b.clone().lerp(c, (t - 0.15) / 0.35);
-      return c.clone().lerp(d, (t - 0.5) / 0.5);
-    }
-
-    function shapeColor() {
-      return new THREE.Color().setHSL(0.08 + Math.random() * 0.1, 0.6 + Math.random() * 0.35, 0.5 + Math.random() * 0.4);
-    }
-
-    // ==================== 粒子系统工厂 ====================
-    function createSystem(count, scatter, tex, baseSize, opacity) {
-      const pos = new Float32Array(count * 3);
-      pos.set(scatter);
-      const cols = new Float32Array(count * 3),
-        sizes = new Float32Array(count);
-      const gCols = new Float32Array(count * 3),
-        sCols = new Float32Array(count * 3);
-      for (let i = 0; i < count; i++) {
-        const x = scatter[i * 3],
-          y = scatter[i * 3 + 1],
-          z = scatter[i * 3 + 2];
-        const d = Math.sqrt(x * x + y * y + z * z);
-        const gc = galaxyColor(d, RADIUS * 1.5);
-        gCols[i * 3] = gc.r;
-        gCols[i * 3 + 1] = gc.g;
-        gCols[i * 3 + 2] = gc.b;
-        const sc = shapeColor();
-        sCols[i * 3] = sc.r;
-        sCols[i * 3 + 1] = sc.g;
-        sCols[i * 3 + 2] = sc.b;
-        cols[i * 3] = gc.r;
-        cols[i * 3 + 1] = gc.g;
-        cols[i * 3 + 2] = gc.b;
-        sizes[i] = baseSize * (0.4 + Math.random() * 1.4);
+      function setupCanvas() { canvas = mountEl.querySelector('#oracleCanvas'); ctx = canvas.getContext('2d'); resizeCanvas(); }
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+        radius = Math.min(centerX, centerY) * 0.88;
       }
-      const geom = new THREE.BufferGeometry();
-      geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geom.setAttribute('color', new THREE.BufferAttribute(cols, 3));
-      geom.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-      const mat = new THREE.PointsMaterial({
-        size: baseSize,
-        map: tex,
-        vertexColors: true,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        depthTest: true,
-        transparent: true,
-        opacity,
-        sizeAttenuation: true
-      });
-      return {
-        points: new THREE.Points(geom, mat),
-        geom,
-        mat,
-        positions: pos,
-        colors: cols,
-        sizes,
-        gCols,
-        sCols,
-        scatter
-      };
-    }
-
-    const main = createSystem(MAIN, galaxyPositions(MAIN, RADIUS), texMain, 0.05, 0.7);
-    const mid  = createSystem(MID,  galaxyPositions(MID,  RADIUS * 0.9), texMid, 0.03, 0.75);
-    const bg   = createSystem(BG,   galaxyPositions(BG,   RADIUS * 1.6), null,    0.015, 0.4);
-
-    const mainGrp = new THREE.Group();
-    mainGrp.add(main.points);
-    scene.add(mainGrp);
-    const midGrp = new THREE.Group();
-    midGrp.add(mid.points);
-    scene.add(midGrp);
-    scene.add(bg.points);
-
-    // ==================== 形状状态 ====================
-    let curShape = 0,
-      morph = 0.6,
-      targetMorph = 0.6,
-      trans = 1.0;
-    const mainTarget = new Float32Array(MAIN * 3),
-      mainCurr = new Float32Array(MAIN * 3),
-      mainPrev = new Float32Array(MAIN * 3);
-    const midTarget = new Float32Array(MID * 3),
-      midCurr = new Float32Array(MID * 3),
-      midPrev = new Float32Array(MID * 3);
-
-    function setShape(idx, instant = false) {
-      mainTarget.set(shapes[idx]);
-      const midData = sampleSVGPath(svgPaths[idx], MID, SHAPE_SCALE * 0.65);
-      midTarget.set(midData);
-      if (instant) {
-        mainCurr.set(shapes[idx]);
-        mainPrev.set(shapes[idx]);
-        midCurr.set(midData);
-        midPrev.set(midData);
-        trans = 1;
-      } else {
-        mainPrev.set(mainCurr);
-        midPrev.set(midCurr);
-        trans = 0;
+      function normAngle(value) {
+        let a = value % (Math.PI * 2);
+        if (a > Math.PI) a -= Math.PI * 2;
+        if (a < -Math.PI) a += Math.PI * 2;
+        return a;
       }
-    }
-    setShape(0, true);
-
-    // ==================== 相机控制 ====================
-    let theta = 0.3,
-      phi = 1.2,
-      tTheta = theta,
-      tPhi = phi,
-      autoRot = true,
-      drag = false,
-      pX, pY,
-      vX = 0,
-      vY = 0;
-
-    function updCam() {
-      const r = 12.5;
-      camera.position.set(r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
-      camera.lookAt(0, 0, 0);
-    }
-    updCam();
-
-    renderer.domElement.addEventListener('wheel', e => {
-      e.preventDefault();
-      targetMorph = Math.max(0, Math.min(1, targetMorph + (e.deltaY > 0 ? -0.04 : 0.04)));
-    }, { passive: false });
-
-    const startDrag = (x, y) => {
-      drag = true;
-      autoRot = false;
-      pX = x;
-      pY = y;
-      document.body.classList.add('dragging');
-    };
-    const moveDrag = (x, y) => {
-      if (!drag) return;
-      tTheta -= (x - pX) * 0.004;
-      tPhi -= (y - pY) * 0.004;
-      tPhi = Math.max(0.1, Math.min(Math.PI - 0.1, tPhi));
-      pX = x;
-      pY = y;
-      vX = -(x - pX) * 0.004;
-      vY = -(y - pY) * 0.004;
-    };
-    const endDrag = () => {
-      drag = false;
-      document.body.classList.remove('dragging');
-      if (Math.abs(vX) < 0.0005) autoRot = true;
-    };
-
-    renderer.domElement.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
-    window.addEventListener('mousemove', e => moveDrag(e.clientX, e.clientY));
-    window.addEventListener('mouseup', endDrag);
-    renderer.domElement.addEventListener('touchstart', e => {
-      if (e.touches.length === 1) startDrag(e.touches[0].clientX, e.touches[0].clientY);
-    }, { passive: false });
-    renderer.domElement.addEventListener('touchmove', e => {
-      if (drag && e.touches.length === 1) { e.preventDefault();
-        moveDrag(e.touches[0].clientX, e.touches[0].clientY); }
-    }, { passive: false });
-    renderer.domElement.addEventListener('touchend', endDrag);
-
-    // 形状按钮
-    document.querySelectorAll('.shape-btn[data-shape]').forEach(b => b.addEventListener('click', () => {
-      const idx = parseInt(b.dataset.shape);
-      document.querySelectorAll('.shape-btn').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      curShape = idx;
-      setShape(idx);
-      if (targetMorph < 0.15) targetMorph = 0.65;
-    }));
-
-    document.getElementById('panel-toggle').addEventListener('click', () => {
-      document.getElementById('panel').classList.toggle('collapsed');
-    });
-
-    // ==================== 自定义文字 ====================
-    const overlay = document.getElementById('text-overlay');
-    document.getElementById('custom-btn').addEventListener('click', () => { overlay.classList.add('active'); });
-    document.getElementById('cancel-btn').addEventListener('click', () => { overlay.classList.remove('active'); });
-    document.getElementById('confirm-btn').addEventListener('click', () => {
-      const text = document.getElementById('custom-text').value.trim();
-      if (!text) return;
-
-      const size = 1024;
-      const canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-            // 保留手动换行，不再自动根据宽度拆分
-      const lines = text.split('\n'); // 只按回车拆分
-
-      let fs = 220;
-      ctx.font = `${fs}px "STXingkai","KaiTi","楷体",cursive`;
-      const maxW = size * 0.85;
-
-      // 动态调整字号，确保每一行的宽度都不超过画布
-      while (lines.some(line => ctx.measureText(line).width > maxW) && fs > 30) {
-        fs -= 10;
-        ctx.font = `${fs}px "STXingkai","KaiTi","楷体",cursive`;
+      function getIndex(angle) {
+        const sec = Math.PI * 2 / 12;
+        const target = -Math.PI / 2;
+        let best = 0, bestD = Infinity;
+        for (let i = 0; i < 12; i++) {
+          const center = normAngle(i * sec + sec / 2 + angle);
+          const dist = Math.abs(normAngle(center - target));
+          if (dist < bestD) { bestD = dist; best = i; }
+        }
+        return best;
       }
-
-      // 如果行数较多，也检查总高度
-      const lineH = fs * 1.3;
-      let totalH = lines.length * lineH;
-      while (totalH > size * 0.8 && fs > 30) {
-        fs -= 10;
-        ctx.font = `${fs}px "STXingkai","KaiTi","楷体",cursive`;
-        totalH = lines.length * fs * 1.3;
-      }
-      const startY = size / 2 - (lines.length - 1) * fs * 1.3 / 2;
-      lines.forEach((l, i) => ctx.fillText(l, size / 2, startY + i * fs * 1.3));
-
-      const img = ctx.getImageData(0, 0, size, size);
-      const pixels = [];
-      for (let y = 0; y < size; y++)
-        for (let x = 0; x < size; x++)
-          if (img.data[(y * size + x) * 4 + 3] > 60) pixels.push({ x, y });
-
-      const data = new Float32Array(MAIN * 3);
-      const half = size / 2,
-        norm = SHAPE_SCALE / half;
-      for (let i = 0; i < MAIN; i++) {
-        const p = pixels[i % pixels.length];
-        data[i * 3] = (p.x - half) * norm;
-        data[i * 3 + 1] = -(p.y - half) * norm;
-        data[i * 3 + 2] = (Math.random() - 0.5) * 0.2 * SHAPE_SCALE;
-      }
-      mainTarget.set(data);
-      mainPrev.set(mainCurr);
-      mainCurr.set(data);
-      trans = 0;
-
-      const midData = new Float32Array(MID * 3);
-      for (let i = 0; i < MID; i++) {
-        const p = pixels[i % pixels.length];
-        midData[i * 3] = (p.x - half) * norm * 0.65;
-        midData[i * 3 + 1] = -(p.y - half) * norm * 0.65;
-        midData[i * 3 + 2] = (Math.random() - 0.5) * 0.15 * SHAPE_SCALE;
-      }
-      midTarget.set(midData);
-      midPrev.set(midCurr);
-      midCurr.set(midData);
-
-      curShape = -1;
-      document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById('custom-btn').classList.add('active');
-      overlay.classList.remove('active');
-      if (targetMorph < 0.15) targetMorph = 0.65;
-    });
-
-    // 键盘快捷键
-    window.addEventListener('keydown', e => {
-      const len = 16;
-      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        const n = (curShape - 1 + len) % len;
-        switchTo(n);
-      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-        e.preventDefault();
-        const n = (curShape + 1) % len;
-        switchTo(n);
-      } else if (e.key === 'r' || e.key === 'R') {
-        targetMorph = targetMorph > 0.5 ? 0 : 1;
-      } else if (e.key === 'f' || e.key === 'F') {
-        targetMorph = 0;
-      } else if (e.key === 'g' || e.key === 'G') {
-        targetMorph = 1;
-      }
-    });
-
-    function switchTo(n) {
-      document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
-      const btn = document.querySelector(`.shape-btn[data-shape="${n}"]`);
-      if (btn) btn.classList.add('active');
-      curShape = n;
-      setShape(n);
-      if (targetMorph < 0.15) targetMorph = 0.65;
-    }
-
-    // 窗口大小调整
-    window.addEventListener('resize', () => {
-      camera.aspect = innerWidth / innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(innerWidth, innerHeight);
-      composer.setSize(innerWidth, innerHeight);
-    });
-
-    // ==================== 缓动函数 ====================
-    function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
-
-    // ==================== 动画循环 ====================
-    const clock = new THREE.Clock();
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = Math.min(clock.getDelta(), 0.1);
-
-      // 形态过渡（散开 ↔ 汇聚）
-      morph += (targetMorph - morph) * 0.015;
-
-      // 形状切换过渡
-      if (trans < 1) {
-        trans += 0.045;
-        if (trans >= 1) {
-          trans = 1;
-          mainCurr.set(mainTarget);
-          midCurr.set(midTarget);
+      function draw() {
+        if (!ctx) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        const bg = ctx.createRadialGradient(0, 0, radius * 0.06, 0, 0, radius);
+        if (mirrorMode) {
+          bg.addColorStop(0, '#2a1614'); bg.addColorStop(0.55, '#120b0b'); bg.addColorStop(1, '#050404');
         } else {
-          const t = ease(trans);
-          for (let i = 0; i < MAIN * 3; i++) mainCurr[i] = mainPrev[i] + (mainTarget[i] - mainPrev[i]) * t;
-          for (let i = 0; i < MID * 3; i++) midCurr[i] = midPrev[i] + (midTarget[i] - midPrev[i]) * t;
+          bg.addColorStop(0, '#4d361b'); bg.addColorStop(0.55, '#1d130b'); bg.addColorStop(1, '#070506');
+        }
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.fill();
+        drawMirrorFrame();
+        drawRing(OUTER, outerAngle, radius * 0.76, radius * 0.26, 9);
+        drawRing(MIDDLE, midAngle, radius * 0.54, radius * 0.2, 10);
+        drawRing(INNER_SYMBOL, innerAngle, radius * 0.34, radius * 0.16, 12);
+        drawCenter();
+        drawPointer();
+        ctx.restore();
+      }
+      function drawMirrorFrame() {
+        ctx.save();
+        for (let i = 0; i < 4; i++) {
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * (1 - i * 0.055), 0, Math.PI * 2);
+          ctx.strokeStyle = mirrorMode ? 'rgba(183,83,72,' + (0.52 - i * 0.08) + ')' : 'rgba(229,188,98,' + (0.58 - i * 0.08) + ')';
+          ctx.lineWidth = (i === 0 ? 4 : 1.4) * dpr;
+          ctx.stroke();
+        }
+        const sec = Math.PI * 2 / 48;
+        for (let i = 0; i < 48; i++) {
+          const a = i * sec;
+          const r1 = radius * 0.89, r2 = radius * (i % 4 === 0 ? 0.82 : 0.85);
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+          ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+          ctx.strokeStyle = mirrorMode ? 'rgba(215,142,126,.38)' : 'rgba(232,196,112,.42)';
+          ctx.lineWidth = (i % 4 === 0 ? 1.7 : 0.8) * dpr;
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      function drawRing(items, angle, rr, band, fs) {
+        const sec = Math.PI * 2 / items.length;
+        ctx.save();
+        ctx.rotate(angle);
+        for (let i = 0; i < items.length; i++) {
+          const start = i * sec;
+          const end = start + sec;
+          ctx.beginPath();
+          ctx.arc(0, 0, rr + band / 2, start, end);
+          ctx.arc(0, 0, rr - band / 2, end, start, true);
+          ctx.closePath();
+          ctx.fillStyle = i % 2 === 0 ? (mirrorMode ? 'rgba(96,38,32,.25)' : 'rgba(194,144,61,.13)') : (mirrorMode ? 'rgba(160,70,60,.12)' : 'rgba(120,150,118,.10)');
+          ctx.fill();
+          ctx.strokeStyle = mirrorMode ? 'rgba(210,120,105,.25)' : 'rgba(226,186,100,.26)';
+          ctx.lineWidth = 1 * dpr;
+          ctx.stroke();
+          const mid = start + sec / 2;
+          const x = Math.cos(mid) * rr;
+          const y = Math.sin(mid) * rr;
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(mid + Math.PI / 2);
+          ctx.fillStyle = mirrorMode ? '#e5b5a8' : '#e4c785';
+          ctx.font = 'bold ' + (fs * dpr) + 'px "Noto Serif SC","KaiTi",serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(items[i], 0, 0);
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+      function drawCenter() {
+        const r = radius * 0.18;
+        ctx.save();
+        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+        g.addColorStop(0, mirrorMode ? '#2d0e0d' : '#4d3519');
+        g.addColorStop(1, mirrorMode ? '#070405' : '#090706');
+        ctx.fillStyle = g;
+        ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = mirrorMode ? '#c66f62' : '#d9b05c';
+        ctx.lineWidth = 2 * dpr; ctx.stroke();
+        ctx.fillStyle = mirrorMode ? '#efb2a5' : '#f0d17a';
+        ctx.font = 'bold ' + (22 * dpr) + 'px "KaiTi",serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(mirrorMode ? '骨' : '鉴', 0, 0);
+        ctx.restore();
+      }
+      function drawPointer() {
+        ctx.save();
+        ctx.rotate(-Math.PI / 2);
+        ctx.beginPath();
+        ctx.moveTo(radius * 0.93, 0);
+        ctx.lineTo(radius * 0.79, -8 * dpr);
+        ctx.lineTo(radius * 0.79, 8 * dpr);
+        ctx.closePath();
+        ctx.fillStyle = mirrorMode ? '#dc7568' : '#f0cc70';
+        ctx.shadowBlur = 14 * dpr;
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.fill();
+        ctx.restore();
+      }
+      function startSpin() {
+        if (isSpinning) return;
+        isSpinning = true;
+        innerVel = (Math.random() - 0.5) * 0.5 + 0.35;
+        midVel = (Math.random() - 0.5) * 0.45 - 0.28;
+        outerVel = (Math.random() - 0.5) * 0.4 + 0.18;
+      }
+      function updateAnim() {
+        if (isSpinning) {
+          innerAngle += innerVel; midAngle += midVel; outerAngle += outerVel;
+          innerVel *= spinDecay; midVel *= spinDecay; outerVel *= spinDecay;
+          if (Math.abs(innerVel) < 0.0006 && Math.abs(midVel) < 0.0006 && Math.abs(outerVel) < 0.0006) {
+            innerVel = midVel = outerVel = 0; isSpinning = false;
+            const iI = getIndex(innerAngle), iM = getIndex(midAngle), iO = getIndex(outerAngle);
+            if (mirrorMode) showShadow(iI, iM, iO); else showLight(iI, iM, iO);
+          }
+        }
+        draw();
+        rafId = requestAnimationFrame(updateAnim);
+      }
+
+      function toggleMirror() {
+        mirrorMode = !mirrorMode;
+        if (mirrorMode) {
+          mirrorBtn.classList.add('active');
+          mirrorBtn.textContent = '收起宝鉴';
+          modeIndicator.textContent = '反面 · 观枯骨';
+          modeIndicator.className = 'mode-indicator mode-dark';
+        } else {
+          mirrorBtn.classList.remove('active');
+          mirrorBtn.textContent = '照鉴反面';
+          modeIndicator.textContent = '正面 · 观红颜';
+          modeIndicator.className = 'mode-indicator mode-light';
+        }
+        draw();
+      }
+      function resetGame() { if (!isSpinning) { innerAngle = midAngle = outerAngle = 0; hideModal(); draw(); } }
+      function hideModal() { modalOverlay.classList.remove('active'); }
+      function spawnBurst(dark) {
+        const rect = canvas.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height * 0.12;
+        const color = dark ? '#e08080' : '#e8c860';
+        for (let i = 0; i < 26; i++) {
+          const spark = document.createElement('div');
+          const angle = Math.random() * Math.PI * 2;
+          const dist = 24 + Math.random() * 72;
+          spark.style.cssText = 'position:fixed;left:' + cx + 'px;top:' + cy + 'px;width:3px;height:3px;border-radius:50%;pointer-events:none;z-index:300;background:' + color + ';box-shadow:0 0 10px ' + color + ';transition:transform .85s ease-out, opacity .85s ease-out;';
+          document.body.appendChild(spark);
+          requestAnimationFrame(function () { spark.style.transform = 'translate(' + Math.cos(angle) * dist + 'px,' + Math.sin(angle) * dist + 'px) scale(0)'; spark.style.opacity = '0'; });
+          setTimeout(function () { spark.remove(); }, 950);
         }
       }
-
-      const mp = morph;
-
-     // 膨胀因子：mp<0.7 时形状先膨胀 0~80%
-const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 1.5 : 1.0;
-
-      for (let i = 0; i < MAIN; i++) {
-  	const i3 = i * 3;
-  	const sx = main.scatter[i3], sy = main.scatter[i3 + 1], sz = main.scatter[i3 + 2];
-  	// 膨胀后的形状位置
-  	const ex = mainCurr[i3] * expand;
-  	const ey = mainCurr[i3 + 1] * expand;
-  	const ez = mainCurr[i3 + 2] * expand;
-  	// 加速向银河过渡
-  	const eff = Math.min(mp * 1.5, 1.0);
-  	main.positions[i3] = sx + (ex - sx) * eff;
-  	main.positions[i3 + 1] = sy + (ey - sy) * eff;
-  	main.positions[i3 + 2] = sz + (ez - sz) * eff;
-  	// ...颜色更新保持不变
-        main.colors[i3] = main.gCols[i3] + (main.sCols[i3] - main.gCols[i3]) * mp;
-        main.colors[i3 + 1] = main.gCols[i3 + 1] + (main.sCols[i3 + 1] - main.gCols[i3 + 1]) * mp;
-        main.colors[i3 + 2] = main.gCols[i3 + 2] + (main.sCols[i3 + 2] - main.gCols[i3 + 2]) * mp;
+      function onKey(e) {
+        if (e.key === ' ') { e.preventDefault(); startSpin(); }
+        else if (e.key === 'm' || e.key === 'M') toggleMirror();
+        else if (e.key === 'r' || e.key === 'R') resetGame();
+        else if (e.key === 'Escape') hideModal();
       }
-      main.geom.attributes.position.needsUpdate = true;
-      main.geom.attributes.color.needsUpdate = true;
+      const onResize = function () { resizeCanvas(); draw(); };
+      spinBtn.addEventListener('click', startSpin);
+      mirrorBtn.addEventListener('click', toggleMirror);
+      resetBtn.addEventListener('click', resetGame);
+      modalCloseBtn.addEventListener('click', hideModal);
+      modalOverlay.addEventListener('click', function (e) { if (e.target === modalOverlay) hideModal(); });
+      window.addEventListener('resize', onResize);
+      document.addEventListener('keydown', onKey);
+      createStarfield();
+      setupCanvas();
+      updateAnim();
+      return { destroy: function () { cancelAnimationFrame(rafId); window.removeEventListener('resize', onResize); document.removeEventListener('keydown', onKey); mountEl.innerHTML = ''; }, reset: resetGame };
+    }
+  </script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    const PARADOX_ENDINGS = {
+                pure_stillness: {
+                    title: '空寂入定',
+                    poem: '假作真时真亦假，无为有处有还无。',
+                    quote: '你几乎未动分毫，一炷香尽，你以全然静止的姿态见证了太虚幻境的自我净化。',
+                    analysis: '红学注：此句出自太虚幻境牌坊对联。你如《红楼梦》开篇的石头，历经繁华后归于寂然。跛足道人度化甄士隐时唱《好了歌》，"好便是了，了便是好"——你未涉缘却已达了悟之界。'
+                },
+                gazer: {
+                    title: '镜花水月',
+                    poem: '一个是水中月，一个是镜中花。',
+                    quote: '你久久凝视却不触碰，如同宝玉翻阅金陵十二钗册籍，见其名而不解其意。',
+                    analysis: '红学注：此句为宝玉梦游太虚幻境时所见钗黛判词。你近距离观察却未涉足情缘，恰似读者隔纸观花。风月宝鉴正面是红粉，背面是骷髅——你只看了一面，还有一半真相未睹。'
+                },
+                frenzy: {
+                    title: '情极而焚',
+                    poem: '机关算尽太聪明，反算了卿卿性命。',
+                    quote: '你急急点击，如王熙凤弄权铁槛寺，最终落得"哭向金陵事更哀"。',
+                    analysis: '红学注：此句为凤姐判词。过度干预导致系统迅速膨胀，正如贾府的衰败往往源于自身内部。跛足道人叮嘱贾瑞"千万不可照正面"——你却在欲望的正面照了又照。'
+                },
+                obsession: {
+                    title: '痴念成劫',
+                    poem: '可叹停机德，堪怜咏絮才。玉带林中挂，金簪雪里埋。',
+                    quote: '你长久凝视一段情缘，情深不寿，强极则辱。',
+                    analysis: '红学注：此为钗黛合咏判词。你执着于一缘，如同宝玉对黛玉的"欺人"之言，也如宝钗的"任是无情也动人"。曹雪芹说"因空见色，由色生情，传情入色，自色悟空"——你正处"由色生情"之阶段，未及悟空。'
+                },
+                breeder: {
+                    title: '孽海情天',
+                    poem: '厚地高天，堪叹古今情不尽；痴男怨女，可怜风月债难偿。',
+                    quote: '你创造了一段极密的情缘网络，太虚幻境孽海情天宫门上的对联正是为你而书。',
+                    analysis: '红学注：此联悬于太虚幻境"孽海情天"宫门。情缘如织，风月债难偿，你便是那陷入情网的"痴男怨女"。整部《红楼梦》便是警幻仙姑劝诫世人"以情悟道"的过程，而你已在情障中迷途。'
+                },
+                paradox: {
+                    title: '色空相激',
+                    poem: '因空见色，由色生情，传情入色，自色悟空。',
+                    quote: '你点击较多却精简了情缘，恰如空空道人从《石头记》中悟道的完整循环。',
+                    analysis: '红学注：此句是《红楼梦》第一回空空道人的悟道过程，也是全书的哲学总纲。你似乎在无意识中重演了色空轮回——从大荒漠幻入繁华，再从繁华中看破。也许再经一遭，便能彻底"悟空"。'
+                },
+                explorer: {
+                    title: '红楼梦中人',
+                    poem: '满纸荒唐言，一把辛酸泪。都云作者痴，谁解其中味？',
+                    quote: '你积极探索每段情缘，却未意识到自己已成了书中的角色。',
+                    analysis: '红学注：此诗是《红楼梦》开篇第一回楔子中的诗。作者借"石头"之口感叹世人难解书中之味。你如今亦是这荒唐言中的一字，辛酸泪中的一滴——当局者迷，旁观者清，而你在太虚幻境中已分不清身份。'
+                },
+                recluse: {
+                    title: '万境归空',
+                    poem: '好一似食尽鸟投林，落了片白茫茫大地真干净。',
+                    quote: '你任由多条情丝自然消逝，如同贾府最终树倒猢狲散，只剩白地一片。',
+                    analysis: '红学注：此句为飞鸟各投林判词，是《红楼梦》的终结预言。你让规则自生自灭，无意中遵循了"好了歌"的旨意——"好便是了，了便是好"。你的主动不作为，反而成就了最彻底的结局。'
+                },
+                balanced: {
+                    title: '情禅一味',
+                    poem: '无立足境，是方干净。',
+                    quote: '你在动与静、触与观之间找到了微妙的平衡，近乎禅意。',
+                    analysis: '红学注：此句为黛玉与宝玉斗机锋时所言，深得禅宗"本来无一物"之意。你在行动与观察之间保持张力，既不入世过深，也不完全出世，正似《红楼梦》中那个始终在情与空之间徘徊的"石头"。'
+                },
+                single_touch: {
+                    title: '惊鸿一瞥',
+                    poem: '此情可待成追忆，只是当时已惘然。',
+                    quote: '你只触碰了一次，却再未行动，像极了甄英莲（香菱）初入大观园时对诗社的惊鸿一瞥，此后便坠入命运的轮回。',
+                    analysis: '红学注：虽为李商隐诗句，但香菱学诗的故事是《红楼梦》中最为动人的插曲之一。你的一次触缘，开启了整个幻境的波澜，此后即便什么都不做，也已不再是原来的你。'
+                },
+                default: {
+                    title: '太虚过客',
+                    poem: '春梦随云散，飞花逐水流。寄言众儿女，何必觅闲愁。',
+                    quote: '你在太虚幻境中随意游走，如宝玉初入幻境，不过在雕栏玉砌间走了一遭。',
+                    analysis: '红学注：此诗是警幻仙姑出场诗。南柯一梦终须醒，你如大观园中众儿女，被警幻仙姑告知一切皆为梦幻。你的行为并无偏执一端，也许正是作者所期望的——看尽风情，却莫被风情所困。'
+                },
+            };
+    async function initParadoxApp(mountEl) {
+      mountEl.innerHTML =
+        '<div class="paradox-app"><div class="paradox-hud paradox-info"><span id="rule-count">情缘：3</span><br><span id="still-time">空寂：0s</span></div><div class="paradox-hud paradox-incense"><div id="censer-text">香初燃 · 30息</div><div class="incense-meter"><span id="incense-fill"></span></div></div><div class="paradox-hud paradox-entropy" id="entropy-display">情障 H = 0.02</div><div class="paradox-message" id="message"></div><div class="temptation-pulse" id="temptation-dot"></div><div class="cert-overlay" id="cert-overlay"><div class="cert-panel"><div id="cert-title"></div><div id="cert-poem"></div><div id="cert-stats"></div><div id="cert-quote"></div><div id="cert-analysis"></div><button class="cert-btn" id="cert-download" type="button">下载判词</button><button class="cert-btn" id="cert-close" type="button">再入幻境</button></div></div></div>';
+      const app = mountEl.querySelector('.paradox-app');
+      const MAX_RULES = 110;
+      const GAME_DURATION = 30;
+      const state = { rules: [], connections: [], totalClicks: 0, totalHoverCreates: 0, stillTime: 0, lastActivity: Date.now(), frozen: false, entropy: 0, countdown: GAME_DURATION, hoverStreak: 0, maxHoverStreak: 0, rapidClicks: 0, lastClickTime: 0, trimmedCount: 0, idleTotal: 0, peakStillness: 0, gameStartTime: Date.now(), phase: 'playing', mirrorFlipCount: 0, lastPromptAt: 0 };
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color('#170f1d');
+      scene.fog = new THREE.Fog('#170f1d', 8, 58);
+      const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.5, 180);
+      camera.position.set(5, 4.8, 11);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.shadowMap.enabled = true;
+      app.appendChild(renderer.domElement);
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true; controls.dampingFactor = 0.08; controls.autoRotate = true; controls.autoRotateSpeed = 0.22; controls.target.set(0, 0.1, 0);
+      scene.add(new THREE.AmbientLight('#51344a', 0.72));
+      const mainLight = new THREE.DirectionalLight('#fff0da', 0.85); mainLight.position.set(4, 13, 7); mainLight.castShadow = true; scene.add(mainLight);
+      const redLight = new THREE.PointLight('#b44a4a', 1.2, 18); redLight.position.set(-4, 1.4, 5); scene.add(redLight);
+      const goldLight = new THREE.PointLight('#d9b06d', 0.8, 12); goldLight.position.set(3, -1, 2); scene.add(goldLight);
 
-      // 更新中层粒子
-      for (let i = 0; i < MID; i++) {
-  	const i3 = i * 3;
-  	const sx = mid.scatter[i3], sy = mid.scatter[i3 + 1], sz = mid.scatter[i3 + 2];
-  	const ex = midCurr[i3] * expand;
-  	const ey = midCurr[i3 + 1] * expand;
-  	const ez = midCurr[i3 + 2] * expand;
-  	const eff = Math.min(mp * 1.5, 1.0);
-  	mid.positions[i3] = sx + (ex - sx) * eff;
-  	mid.positions[i3 + 1] = sy + (ey - sy) * eff;
-  	mid.positions[i3 + 2] = sz + (ez - sz) * eff;
-  	// ...颜色更新保持不变
-        mid.colors[i3] = mid.gCols[i3] + (mid.sCols[i3] - mid.gCols[i3]) * mp;
-        mid.colors[i3 + 1] = mid.gCols[i3 + 1] + (mid.sCols[i3 + 1] - mid.gCols[i3 + 1]) * mp;
-        mid.colors[i3 + 2] = mid.gCols[i3 + 2] + (mid.sCols[i3 + 2] - mid.gCols[i3 + 2]) * mp;
+      function makeTextTexture(text, w, h, dark) {
+        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+        const c = canvas.getContext('2d');
+        c.clearRect(0, 0, w, h);
+        c.fillStyle = dark ? 'rgba(55,22,18,.82)' : 'rgba(218,186,122,.9)';
+        c.strokeStyle = dark ? 'rgba(228,160,135,.85)' : 'rgba(118,72,36,.75)';
+        c.lineWidth = 8;
+        c.beginPath(); c.roundRect(8, 8, w - 16, h - 16, 26); c.fill(); c.stroke();
+        c.fillStyle = dark ? '#f0c1ad' : '#5b2b1d';
+        c.font = 'bold 42px KaiTi, serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText(text, w / 2, h / 2);
+        const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; return tex;
       }
-      mid.geom.attributes.position.needsUpdate = true;
-      mid.geom.attributes.color.needsUpdate = true;
-
-      // 动态调整粒子大小和辉光
-      main.mat.size = 0.04 + mp * 0.10;
-      mid.mat.size = 0.02 + mp * 0.06;
-      bg.points.rotation.y += dt * 0.05;
-      mainGrp.rotation.y += (1 - mp) * 0.16 * dt;
-      midGrp.rotation.y += (1 - mp) * 0.13 * dt;
-
-      // 相机自动旋转
-      if (autoRot && !drag) {
-        tTheta += 0.18 * dt;
-        vX *= 0.88;
-        vY *= 0.88;
-      } else if (!drag && !autoRot) {
-        tTheta += vX * dt;
-        tPhi += vY * dt;
-        tPhi = Math.max(0.1, Math.min(Math.PI - 0.1, tPhi));
-        vX *= 0.9;
-        vY *= 0.9;
-        if (Math.abs(vX) < 0.0003) autoRot = true;
+      function makePatternTexture(theme) {
+        const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
+        const c = canvas.getContext('2d');
+        const base = theme === 'red' ? '#8d4a42' : theme === 'grey' ? '#83766a' : '#d8d2c5';
+        c.fillStyle = base; c.fillRect(0, 0, 512, 512);
+        c.globalAlpha = 0.24; c.strokeStyle = theme === 'red' ? '#f1c48d' : '#986f3b'; c.lineWidth = 3;
+        for (let y = 24; y < 512; y += 64) for (let x = 24; x < 512; x += 64) {
+          c.beginPath(); c.arc(x, y, 18, 0, Math.PI * 2); c.stroke();
+          c.beginPath(); c.moveTo(x - 20, y); c.quadraticCurveTo(x, y - 24, x + 20, y); c.quadraticCurveTo(x, y + 24, x - 20, y); c.stroke();
+        }
+        c.globalAlpha = 0.18; c.strokeStyle = '#2b1a12'; c.lineWidth = 1;
+        for (let i = 0; i < 80; i++) { c.beginPath(); const x = Math.random() * 512, y = Math.random() * 512; c.moveTo(x, y); c.lineTo(x + Math.random() * 80 - 40, y + Math.random() * 80 - 40); c.stroke(); }
+        const tex = new THREE.CanvasTexture(canvas); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(1, 1); return tex;
       }
-      theta += (tTheta - theta) * 0.12;
-      phi += (tPhi - phi) * 0.12;
-      updCam();
-
-      // 更新进度条
-      document.getElementById('progress-bar-fill').style.height = (morph * 100) + '%';
-
-      // 动态 Bloom 强度
-      bloom.strength = 0.3 + (1 - mp) * 1.2;
-
-      composer.render();
+      function createGlowTexture() {
+        const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+        const c = canvas.getContext('2d'); const g = c.createRadialGradient(32,32,0,32,32,32);
+        g.addColorStop(0, 'rgba(255,240,225,1)'); g.addColorStop(0.4, 'rgba(226,140,115,.75)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+        c.fillStyle = g; c.fillRect(0,0,64,64); return new THREE.CanvasTexture(canvas);
+      }
+      const glowMap = createGlowTexture();
+      function createHonglouVase(theme) {
+        const group = new THREE.Group();
+        const points = [];
+        for (let i = 0; i <= 34; i++) {
+          const t = i / 34, y = t * 1.9 - 0.95;
+          let r = 0.18 + 0.28 * Math.sin(Math.PI * Math.pow(t, 0.68));
+          if (t < 0.12) r = 0.18 + t * 1.4;
+          if (t > 0.65) r *= 0.58 + (t - 0.65) * 1.1;
+          if (t > 0.86) r = 0.22 + (t - 0.86) * 0.72;
+          points.push(new THREE.Vector2(r, y));
+        }
+        const body = new THREE.Mesh(new THREE.LatheGeometry(points, 72), new THREE.MeshStandardMaterial({ color: '#eee3cf', map: makePatternTexture(theme), roughness: 0.34, metalness: 0.05 }));
+        body.castShadow = body.receiveShadow = true; group.add(body);
+        const goldMat = new THREE.MeshStandardMaterial({ color: '#d3a650', roughness: 0.22, metalness: 0.55 });
+        [['rim', .32, .025, .98], ['neck', .24, .018, .64], ['shoulder', .42, .018, .18], ['foot', .3, .028, -.92]].forEach(function (p) {
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(p[1], p[2], 10, 72), goldMat); ring.rotation.x = Math.PI / 2; ring.position.y = p[3]; group.add(ring);
+        });
+        for (let i = 0; i < 8; i++) {
+          const petal = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 8), goldMat);
+          const a = i / 8 * Math.PI * 2; petal.position.set(Math.cos(a) * .42, .08, Math.sin(a) * .42); petal.scale.set(1, .35, .55); group.add(petal);
+        }
+        return group;
+      }
+      function createFengyueMirror(reflective) {
+        const group = new THREE.Group();
+        const frameMat = new THREE.MeshStandardMaterial({ color: '#b88a42', roughness: 0.25, metalness: 0.74 });
+        const mirrorMat = reflective || new THREE.MeshPhysicalMaterial({ color: '#c9c4b7', roughness: 0.08, metalness: 1, clearcoat: 1 });
+        const face = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.045, 72), mirrorMat); face.userData.isReflective = true; face.name = 'mirrorSurface'; group.add(face);
+        const outer = new THREE.Mesh(new THREE.TorusGeometry(0.52, 0.065, 12, 72), frameMat); outer.rotation.x = Math.PI / 2; group.add(outer);
+        const inner = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.018, 8, 72), frameMat); inner.rotation.x = Math.PI / 2; group.add(inner);
+        const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(0,-.45,0), new THREE.Vector3(.04,-.78,.02), new THREE.Vector3(-.04,-1.12,0)]);
+        const handle = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, .045, 12), frameMat); group.add(handle);
+        const plaque = new THREE.Mesh(new THREE.CircleGeometry(.32, 48), new THREE.MeshStandardMaterial({ map: makeTextTexture('风月宝鉴', 320, 160, false), transparent: true, roughness: .35, metalness: .2 }));
+        plaque.rotation.y = Math.PI; plaque.position.z = -0.035; group.add(plaque);
+        return group;
+      }
+      function getModelForLabel(label, mirrorMaterial) {
+        if (label.includes('金玉') || label.includes('太虚') || label.includes('痴念')) return createFengyueMirror(mirrorMaterial);
+        if (label.includes('情劫')) return createHonglouVase('red');
+        if (label.includes('情鬼')) return createHonglouVase('grey');
+        return createHonglouVase('pale');
+      }
+      function createIncenseTimer() {
+        const group = new THREE.Group(); group.position.set(3.6, -1.65, 1.5); group.rotation.y = -0.35;
+        const wood = new THREE.MeshStandardMaterial({ color: '#4f2b19', roughness: .6 });
+        const bronze = new THREE.MeshStandardMaterial({ color: '#8f673c', roughness: .3, metalness: .55 });
+        const censer = new THREE.Mesh(new THREE.CylinderGeometry(.38, .46, .28, 48), bronze); censer.castShadow = true; group.add(censer);
+        const ash = new THREE.Mesh(new THREE.CylinderGeometry(.33, .35, .035, 48), new THREE.MeshStandardMaterial({ color: '#b9afa0', roughness: .8 })); ash.position.y = .16; group.add(ash);
+        const stick = new THREE.Mesh(new THREE.CylinderGeometry(.018, .018, 1.35, 12), wood); stick.position.y = .82; stick.rotation.z = -0.08; group.add(stick);
+        const ember = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowMap, transparent: true, color: '#ff8e5a', depthWrite: false })); ember.scale.set(.18,.18,.18); group.add(ember);
+        const smokeGeo = new THREE.BufferGeometry(); const count = 60; const pos = new Float32Array(count * 3);
+        for (let i = 0; i < count; i++) { pos[i*3] = 0; pos[i*3+1] = Math.random() * 1.8; pos[i*3+2] = 0; }
+        smokeGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const smoke = new THREE.Points(smokeGeo, new THREE.PointsMaterial({ map: glowMap, size: .16, transparent: true, opacity: .25, color: '#d9c8ba', depthWrite: false }));
+        group.add(smoke);
+        group.updateBurn = function(progress, time) {
+          const remain = Math.max(.05, 1 - progress);
+          stick.scale.y = remain; stick.position.y = .18 + .675 * remain;
+          ember.position.set(Math.sin(time * 2) * .025, .18 + 1.35 * remain, Math.cos(time * 1.8) * .025);
+          ember.material.opacity = progress >= 1 ? 0 : .9;
+          ash.scale.set(1 + progress * .6, 1, 1 + progress * .6);
+          const arr = smokeGeo.attributes.position.array;
+          for (let i = 0; i < count; i++) {
+            arr[i*3] = Math.sin(time * .8 + i) * .08 + Math.sin(i) * .04;
+            arr[i*3+1] = .22 + ((time * .22 + i / count * 1.8) % 1.8);
+            arr[i*3+2] = Math.cos(time * .7 + i * 1.7) * .08;
+          }
+          smokeGeo.attributes.position.needsUpdate = true;
+        };
+        return group;
+      }
+      function addBackdrop() {
+        const gateTex = makeTextTexture('太虚幻境', 512, 180, true);
+        const gate = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 2.4), new THREE.MeshBasicMaterial({ map: gateTex, transparent: true, opacity: .28, depthWrite: false }));
+        gate.position.set(0, 1.9, -8); scene.add(gate);
+        const moon = new THREE.Mesh(new THREE.CircleGeometry(2.4, 96), new THREE.MeshBasicMaterial({ color: '#ead6c5', transparent: true, opacity: .08, depthWrite: false }));
+        moon.position.set(-3.4, 2.1, -9); scene.add(moon);
+      }
+      addBackdrop();
+      const bgCount = 900, bgGeo = new THREE.BufferGeometry(), bgPos = new Float32Array(bgCount * 3);
+      for (let i = 0; i < bgCount; i++) { bgPos[i*3] = (Math.random()-.5)*70; bgPos[i*3+1] = (Math.random()-.5)*45; bgPos[i*3+2] = (Math.random()-.5)*60; }
+      bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+      const bgPetals = new THREE.Points(bgGeo, new THREE.PointsMaterial({ color:'#f0d8d0', size:.34, map:glowMap, blending:THREE.AdditiveBlending, transparent:true, opacity:.5, depthWrite:false })); scene.add(bgPetals);
+      const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(128); const cubeCamera = new THREE.CubeCamera(.1, 80, cubeRenderTarget); let mirrorForReflection = null;
+      function createRule(x, y, z, colorIdx, label) {
+        let mirrorMaterial = null;
+        if (label.includes('金玉')) mirrorMaterial = new THREE.MeshPhysicalMaterial({ color:0xc8c0b8, roughness:.08, metalness:1, envMap:cubeRenderTarget.texture, clearcoat:1 });
+        const model = getModelForLabel(label, mirrorMaterial); model.position.set(x,y,z); model.userData = { type: label, active: true, hoverActive: false, colorIndex: colorIdx };
+        model.traverse(function(child){ if(child.isMesh){ child.castShadow = true; child.receiveShadow = true; } if(child.userData && child.userData.isReflective) mirrorForReflection = child; });
+        scene.add(model); return model;
+      }
+      function createConnection(a, b) { const geo = new THREE.BufferGeometry().setFromPoints([a.position.clone(), b.position.clone()]); const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color:'#c4a0c8', transparent:true, opacity:.32 })); scene.add(line); return { line: line, from: a, to: b }; }
+      function updateConn(c) { const arr = c.line.geometry.attributes.position.array; arr[0]=c.from.position.x; arr[1]=c.from.position.y; arr[2]=c.from.position.z; arr[3]=c.to.position.x; arr[4]=c.to.position.y; arr[5]=c.to.position.z; c.line.geometry.attributes.position.needsUpdate = true; }
+      function disposeObj(obj) { obj.traverse(function(child){ if(child.geometry) child.geometry.dispose(); if(child.material){ if(Array.isArray(child.material)) child.material.forEach(function(m){m.dispose();}); else child.material.dispose(); } }); }
+      function removeRule(mesh) { state.connections = state.connections.filter(function(c){ if(c.from===mesh || c.to===mesh){ scene.remove(c.line); c.line.geometry.dispose(); c.line.material.dispose(); return false; } return true; }); scene.remove(mesh); disposeObj(mesh); state.rules = state.rules.filter(function(r){ return r !== mesh; }); }
+      function spawnNear(origin, label) { if(state.rules.length >= MAX_RULES) return null; const pos = origin.position.clone(); pos.x += (Math.random()-.5)*2.7; pos.y += (Math.random()-.5)*2.5; pos.z += (Math.random()-.5)*2.7; const nr = createRule(pos.x,pos.y,pos.z,origin.userData.colorIndex+1,label); state.rules.push(nr); state.connections.push(createConnection(origin,nr)); return nr; }
+      const r1 = createRule(0,.2,0,0,'木石前盟'), r2 = createRule(2.2,.6,.7,1,'金玉良缘'), r3 = createRule(-1.5,-.3,1.4,2,'太虚幻境');
+      state.rules.push(r1,r2,r3); state.connections.push(createConnection(r1,r2), createConnection(r2,r3), createConnection(r3,r1));
+      const incense = createIncenseTimer(); scene.add(incense);
+      const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2(); let hovered = null, hoverAccum = 0, trimT = 0, temptT = 0, rafId = 0, disposed = false;
+      const messagePool = {
+        click: ['你触动了一段情缘，却生出了新的劫难。','金风玉露一相逢，幻境便多一缕牵缠。','一念入红尘，花影又生枝。'],
+        gaze: ['你凝视缘起，却滋养了痴念。','看得太久，镜花也会生根。','一眼成痴，水月添痕。'],
+        trim: ['万境归空，一缕情丝随风而逝。','香烟散处，旧缘自解。','花影渐淡，情障少了一重。'],
+        tempt: ['情鬼诱你入迷，幻境又添新障。','镜中红粉一笑，劫数暗生。','风月一闪，心猿又动。'],
+        time: ['香初燃，梦门已启。','烟入绛云，情缘渐密。','残香欲断，判词将成。','香尽梦醒，薄命司开。']
+      };
+      function pick(list){ return list[Math.floor(Math.random()*list.length)]; }
+      function showMessage(t, force) { const now = Date.now(); if(!force && now - state.lastPromptAt < 1200) return; state.lastPromptAt = now; const m = mountEl.querySelector('#message'); m.textContent = t; m.style.opacity = '1'; setTimeout(function(){ if(m) m.style.opacity='0'; }, 2400); }
+      function updateEntropy(){ state.entropy = Math.min(1, state.rules.length / MAX_RULES); mountEl.querySelector('#entropy-display').textContent = '情障 H = ' + state.entropy.toFixed(2); mountEl.querySelector('#rule-count').textContent = '情缘：' + state.rules.length; }
+      function setHover(obj, active){ obj.traverse(function(child){ if(child.isMesh && child.material && child.material.emissive){ child.material.emissive.set(active ? '#3a1410' : '#000000'); } }); }
+      function pointerFromEvent(e) { const rect = renderer.domElement.getBoundingClientRect(); pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1; pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1; }
+      function onPointerMove(e){ if(state.frozen) return; pointerFromEvent(e); raycaster.setFromCamera(pointer,camera); const hits = raycaster.intersectObjects(state.rules, true); if(hits.length){ let obj = hits[0].object; while(obj && !state.rules.includes(obj)) obj = obj.parent; if(obj && obj !== hovered){ if(hovered) setHover(hovered,false); hovered = obj; setHover(hovered,true); hovered.userData.hoverActive = true; state.hoverStreak++; state.maxHoverStreak = Math.max(state.maxHoverStreak,state.hoverStreak); } state.lastActivity = Date.now(); state.stillTime = 0; } else if(hovered){ setHover(hovered,false); hovered.userData.hoverActive = false; hovered = null; state.hoverStreak = 0; } }
+      function onPointerDown(e){ if(state.frozen) return; pointerFromEvent(e); raycaster.setFromCamera(pointer,camera); const hits = raycaster.intersectObjects(state.rules,true); if(hits.length){ let obj = hits[0].object; while(obj && !state.rules.includes(obj)) obj = obj.parent; if(obj && obj.userData.active){ const now = Date.now(); if(now - state.lastClickTime < 420) state.rapidClicks++; state.lastClickTime = now; state.totalClicks++; state.lastActivity = Date.now(); state.stillTime = 0; spawnNear(obj,'情劫'); obj.userData.active = false; obj.traverse(function(child){ if(child.isMesh && child.material && child.material.color) child.material.color.multiplyScalar(.72); }); updateEntropy(); showMessage(pick(messagePool.click)); if(obj.userData.type && obj.userData.type.includes('金玉')) { state.mirrorFlipCount++; showMessage('宝鉴翻面，正照红粉，反见清骨。', true); } } } }
+      function updateHover(dt){ if(!hovered || !hovered.userData.hoverActive){ hoverAccum = 0; return; } hoverAccum += dt; if(hoverAccum >= 1){ hoverAccum = 0; state.totalHoverCreates++; state.lastActivity = Date.now(); state.stillTime = 0; spawnNear(hovered,'痴念'); updateEntropy(); showMessage(pick(messagePool.gaze)); } }
+      const temptDot = mountEl.querySelector('#temptation-dot');
+      function updateStillness(dt){ const idle = (Date.now() - state.lastActivity) / 1000; state.stillTime = idle; state.idleTotal += dt; state.peakStillness = Math.max(state.peakStillness, idle); mountEl.querySelector('#still-time').textContent = '空寂：' + Math.floor(idle) + 's'; if(idle > 8 && state.rules.length > 2){ trimT += dt; if(trimT >= 3){ trimT = 0; removeRule(state.rules[Math.floor(Math.random()*state.rules.length)]); state.trimmedCount++; updateEntropy(); showMessage(pick(messagePool.trim)); } } else trimT = 0; if(idle > 6 && !state.frozen){ temptT += dt; if(temptT > 4){ temptT = 0; temptDot.style.display = 'block'; temptDot.style.left = (Math.random()*80+10)+'%'; temptDot.style.top = (Math.random()*70+15)+'%'; setTimeout(function(){ temptDot.style.display='none'; }, 2500); } } }
+      temptDot.addEventListener('click', function(e){ e.stopPropagation(); state.lastActivity = Date.now(); state.stillTime = 0; showMessage(pick(messagePool.tempt), true); if(state.rules.length){ const b = state.rules[Math.floor(Math.random()*state.rules.length)]; spawnNear(b,'情鬼'); spawnNear(b,'情鬼'); } updateEntropy(); temptDot.style.display = 'none'; });
+      function updateCountdown(){ if(state.frozen) return; const elapsed = (Date.now() - state.gameStartTime) / 1000; state.countdown = Math.max(0, GAME_DURATION - Math.floor(elapsed)); const progress = Math.min(1, elapsed / GAME_DURATION); mountEl.querySelector('#incense-fill').style.width = (progress*100).toFixed(1)+'%'; const phase = progress < .35 ? '香初燃' : progress < .7 ? '烟入绛云' : progress < .94 ? '残香欲断' : '香尽梦醒'; mountEl.querySelector('#censer-text').textContent = phase + ' · ' + state.countdown + '息'; incense.updateBurn(progress, elapsed); if([20,10,5,3].includes(state.countdown)) showMessage(phase + '，' + pick(messagePool.time)); if(state.countdown <= 0) determineEnding(); }
+      function determineEnding(){ if(state.frozen) return; const ratio = state.stillTime / GAME_DURATION; if(state.totalClicks === 0 && state.totalHoverCreates === 0 && ratio > .85) triggerEnding('pure_stillness'); else if(state.totalHoverCreates >= 4 && state.totalClicks === 0) triggerEnding('gazer'); else if(state.rapidClicks >= 4) triggerEnding('frenzy'); else if(state.maxHoverStreak >= 4 && state.totalClicks >= 2) triggerEnding('obsession'); else if(state.rules.length >= 18) triggerEnding('breeder'); else if(state.rules.length <= 5 && state.totalClicks >= 3) triggerEnding('paradox'); else if(state.totalClicks >= 6 && state.totalHoverCreates <= 1) triggerEnding('explorer'); else if(state.trimmedCount >= 2) triggerEnding('recluse'); else if(state.totalClicks >= 2 && state.totalHoverCreates >= 2) triggerEnding('balanced'); else if(state.totalClicks === 1 && state.totalHoverCreates === 0) triggerEnding('single_touch'); else triggerEnding('default'); }
+      function triggerEnding(type){ state.frozen = true; state.phase = 'ending'; const data = PARADOX_ENDINGS[type] || PARADOX_ENDINGS.default; mountEl.querySelector('#cert-title').textContent = data.title; mountEl.querySelector('#cert-poem').textContent = '《' + data.poem + '》'; mountEl.querySelector('#cert-stats').innerHTML = '情缘总数：' + state.rules.length + '  涉情次数：' + state.totalClicks + '<br>痴念滋生：' + state.totalHoverCreates + '  空寂峰值：' + Math.floor(state.peakStillness) + 's<br>快速连击：' + state.rapidClicks + '次  最长凝视：' + state.maxHoverStreak + '次'; mountEl.querySelector('#cert-quote').textContent = data.quote; mountEl.querySelector('#cert-analysis').textContent = data.analysis; mountEl.querySelector('#cert-overlay').style.display = 'flex'; }
+      mountEl.querySelector('#cert-close').onclick = function(){ mountEl.querySelector('#cert-overlay').style.display='none'; state.frozen=false; state.phase='playing'; state.gameStartTime=Date.now(); state.countdown=GAME_DURATION; state.totalClicks=0; state.totalHoverCreates=0; state.stillTime=0; state.lastActivity=Date.now(); state.hoverStreak=0; state.maxHoverStreak=0; state.rapidClicks=0; state.lastClickTime=0; state.trimmedCount=0; state.idleTotal=0; state.peakStillness=0; updateEntropy(); };
+      mountEl.querySelector('#cert-download').onclick = function(){ const blob = new Blob([mountEl.querySelector('#cert-title').textContent + '\\n\\n' + mountEl.querySelector('#cert-poem').textContent + '\\n\\n' + mountEl.querySelector('#cert-quote').textContent + '\\n\\n' + mountEl.querySelector('#cert-analysis').textContent], { type:'text/plain;charset=utf-8' }); const a = document.createElement('a'); a.download = 'taixu-panci.txt'; a.href = URL.createObjectURL(blob); a.click(); URL.revokeObjectURL(a.href); };
+      function onKey(e){ if(e.key === 'q' || e.key === 'Q'){ showMessage('你试图远观，却仍在幻界之中。', true); state.lastActivity = Date.now(); state.stillTime = 0; } }
+      function onResize(){ camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); }
+      renderer.domElement.addEventListener('pointermove', onPointerMove);
+      renderer.domElement.addEventListener('pointerdown', onPointerDown);
+      window.addEventListener('resize', onResize);
+      document.addEventListener('keydown', onKey);
+      const clock = new THREE.Clock();
+      function animate(){ if(disposed) return; const dt = Math.min(clock.getDelta(), .3); if(!state.frozen){ updateCountdown(); state.rules.forEach(function(r){ r.rotation.y += .002; r.rotation.z += .0008; }); bgPetals.rotation.y += .0002; updateHover(dt); updateStillness(dt); state.connections.forEach(updateConn); updateEntropy(); controls.autoRotate = true; if(mirrorForReflection && Math.floor(performance.now()/120) % 8 === 0){ mirrorForReflection.visible = false; cubeCamera.position.copy(mirrorForReflection.getWorldPosition(new THREE.Vector3())); cubeCamera.update(renderer, scene); mirrorForReflection.visible = true; } } else controls.autoRotate = false; controls.update(); renderer.render(scene,camera); rafId = requestAnimationFrame(animate); }
+      updateEntropy(); animate();
+      return { destroy: function(){ disposed = true; cancelAnimationFrame(rafId); renderer.domElement.removeEventListener('pointermove', onPointerMove); renderer.domElement.removeEventListener('pointerdown', onPointerDown); window.removeEventListener('resize', onResize); document.removeEventListener('keydown', onKey); state.rules.forEach(disposeObj); state.connections.forEach(function(c){ c.line.geometry.dispose(); c.line.material.dispose(); }); renderer.dispose(); mountEl.innerHTML = ''; }, reset: function(){ mountEl.querySelector('#cert-close')?.click(); } };
     }
 
-    requestAnimationFrame(animate);
-
-    // 几秒后自动隐藏提示
-    setTimeout(() => {
-      const h = document.getElementById('hint-overlay');
-      if (h) { h.classList.add('fading');
-        setTimeout(() => h.remove(), 1500); }
-    }, 6000);
-
-    console.log('🌌 星尘·银河与灵兽 — 完整版已启动');
+    const homeView = document.getElementById('home-view');
+    const shell = document.getElementById('game-shell');
+    const mount = document.getElementById('game-mount');
+    const back = document.getElementById('back-home');
+    let currentApp = null;
+    async function showView(view) {
+      if (currentApp && currentApp.destroy) currentApp.destroy();
+      currentApp = null;
+      if (view === 'home') {
+        shell.classList.remove('active');
+        homeView.style.display = 'block';
+        mount.innerHTML = '';
+        return;
+      }
+      homeView.style.display = 'none';
+      shell.classList.add('active');
+      mount.innerHTML = '<div class="loading-state">正在入境...</div>';
+      if (view === 'rmti') currentApp = initRmtiApp(mount);
+      if (view === 'mirror') currentApp = initMirrorApp(mount);
+      if (view === 'paradox') currentApp = await initParadoxApp(mount);
+    }
+    window.showView = showView;
+    document.querySelectorAll('[data-view]').forEach(function(btn){ btn.addEventListener('click', function(){ showView(btn.dataset.view); }); });
+    back.addEventListener('click', function(){ showView('home'); });
   </script>
 </body>
 </html>
