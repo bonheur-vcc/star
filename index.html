@@ -967,8 +967,8 @@ document.getElementById('morph-slider').addEventListener('input', e => {
       const lines = text.split('\n'); // 只按回车拆分
 
      let fs = 220;
-     const fontFamily = isMobile
-  ? '"ZCOOL XingShu", "KaiTi", "STKaiti", "楷体", "华文楷体", cursive'
+    const fontFamily = isMobile
+  ? '"STKaiti", "KaiTi", "楷体", "华文楷体", "PingFang SC", "Microsoft YaHei", sans-serif'
   : '"ZCOOL XingShu", "STXingkai", "KaiTi", "楷体", cursive';
       ctx.font = `${fs}px ${fontFamily}`;
       const maxW = size * 0.85;
@@ -1010,16 +1010,10 @@ document.getElementById('morph-slider').addEventListener('input', e => {
       mainCurr.set(data);
       trans = 0;
 
-      const midData = new Float32Array(MID * 3);
-      for (let i = 0; i < MID; i++) {
-        const p = pixels[i % pixels.length];
-        midData[i * 3] = (p.x - half) * norm * 0.65;
-        midData[i * 3 + 1] = -(p.y - half) * norm * 0.65;
-        midData[i * 3 + 2] = (Math.random() - 0.5) * 0.15 * SHAPE_SCALE;
-      }
-      midTarget.set(midData);
+      // 文字模式下，让中层粒子散开，避免与外层重叠
+      midTarget.set(mid.scatter);
       midPrev.set(midCurr);
-      midCurr.set(midData);
+      midCurr.set(mid.scatter);
 
       curShape = -1;
       document.querySelectorAll('.shape-btn').forEach(b => b.classList.remove('active'));
@@ -1094,47 +1088,66 @@ document.getElementById('morph-slider').addEventListener('input', e => {
 
       const mp = morph;
 
-     // 膨胀因子：mp<0.7 时形状先膨胀 0~80%
-const expand = mp < 0.7 ? 1.0 + (0.7 - mp) / 0.7 * 1.5 : 1.0;
+     // ========== 两阶段：先慢慢等比例放大，再散开 ==========
+const PHASE_THRESHOLD = 0.5;   // mp < 0.5 后才开始向银河移动
+const MAX_EXPAND = 1.8;        // 最大放大倍数（可调大，如 4.0）
 
-      for (let i = 0; i < MAIN; i++) {
-  	const i3 = i * 3;
-  	const sx = main.scatter[i3], sy = main.scatter[i3 + 1], sz = main.scatter[i3 + 2];
-  	// 膨胀后的形状位置
-  	const ex = mainCurr[i3] * expand;
-  	const ey = mainCurr[i3 + 1] * expand;
-  	const ez = mainCurr[i3 + 2] * expand;
-  	// 加速向银河过渡
-  	const eff = Math.min(mp * 1.5, 1.0);
-  	main.positions[i3] = sx + (ex - sx) * eff;
-  	main.positions[i3 + 1] = sy + (ey - sy) * eff;
-  	main.positions[i3 + 2] = sz + (ez - sz) * eff;
-  	// ...颜色更新保持不变
-        main.colors[i3] = main.gCols[i3] + (main.sCols[i3] - main.gCols[i3]) * mp;
-        main.colors[i3 + 1] = main.gCols[i3 + 1] + (main.sCols[i3 + 1] - main.gCols[i3 + 1]) * mp;
-        main.colors[i3 + 2] = main.gCols[i3 + 2] + (main.sCols[i3 + 2] - main.gCols[i3 + 2]) * mp;
-      }
-      main.geom.attributes.position.needsUpdate = true;
-      main.geom.attributes.color.needsUpdate = true;
+let expand, moveFactor;
+if (mp >= PHASE_THRESHOLD) {
+  // 阶段1：只放大，不移动
+  // mp 从 1 → 0.5，expand 从 1 → MAX_EXPAND
+  expand = 1.0 + (1.0 - mp) / (1.0 - PHASE_THRESHOLD) * (MAX_EXPAND - 1.0);
+  moveFactor = 0.0;            // 完全不混入银河位置
+} else {
+  // 阶段2：保持最大大小，并逐渐移动到银河
+  expand = MAX_EXPAND;         // 保持最大
+  moveFactor = (PHASE_THRESHOLD - mp) / PHASE_THRESHOLD; // 0 → 1
+}
 
-      // 更新中层粒子
-      for (let i = 0; i < MID; i++) {
-  	const i3 = i * 3;
-  	const sx = mid.scatter[i3], sy = mid.scatter[i3 + 1], sz = mid.scatter[i3 + 2];
-  	const ex = midCurr[i3] * expand;
-  	const ey = midCurr[i3 + 1] * expand;
-  	const ez = midCurr[i3 + 2] * expand;
-  	const eff = Math.min(mp * 1.5, 1.0);
-  	mid.positions[i3] = sx + (ex - sx) * eff;
-  	mid.positions[i3 + 1] = sy + (ey - sy) * eff;
-  	mid.positions[i3 + 2] = sz + (ez - sz) * eff;
-  	// ...颜色更新保持不变
-        mid.colors[i3] = mid.gCols[i3] + (mid.sCols[i3] - mid.gCols[i3]) * mp;
-        mid.colors[i3 + 1] = mid.gCols[i3 + 1] + (mid.sCols[i3 + 1] - mid.gCols[i3 + 1]) * mp;
-        mid.colors[i3 + 2] = mid.gCols[i3 + 2] + (mid.sCols[i3 + 2] - mid.gCols[i3 + 2]) * mp;
-      }
-      mid.geom.attributes.position.needsUpdate = true;
-      mid.geom.attributes.color.needsUpdate = true;
+// 主粒子更新
+for (let i = 0; i < MAIN; i++) {
+  const i3 = i * 3;
+  const sx = main.scatter[i3], sy = main.scatter[i3 + 1], sz = main.scatter[i3 + 2];
+  const cx = mainCurr[i3], cy = mainCurr[i3 + 1], cz = mainCurr[i3 + 2];
+
+  // 放大后的形状坐标
+  const ex = cx * expand;
+  const ey = cy * expand;
+  const ez = cz * expand;
+
+  // 根据移动系数混入银河位置
+  main.positions[i3]     = (1.0 - moveFactor) * ex + moveFactor * sx;
+  main.positions[i3 + 1] = (1.0 - moveFactor) * ey + moveFactor * sy;
+  main.positions[i3 + 2] = (1.0 - moveFactor) * ez + moveFactor * sz;
+
+  // 颜色更新（保持原逻辑）
+  main.colors[i3]     = main.gCols[i3]     + (main.sCols[i3]     - main.gCols[i3])     * mp;
+  main.colors[i3 + 1] = main.gCols[i3 + 1] + (main.sCols[i3 + 1] - main.gCols[i3 + 1]) * mp;
+  main.colors[i3 + 2] = main.gCols[i3 + 2] + (main.sCols[i3 + 2] - main.gCols[i3 + 2]) * mp;
+}
+main.geom.attributes.position.needsUpdate = true;
+main.geom.attributes.color.needsUpdate = true;
+
+// 更新中层粒子（完全相同的两阶段逻辑）
+for (let i = 0; i < MID; i++) {
+  const i3 = i * 3;
+  const sx = mid.scatter[i3], sy = mid.scatter[i3 + 1], sz = mid.scatter[i3 + 2];
+  const cx = midCurr[i3], cy = midCurr[i3 + 1], cz = midCurr[i3 + 2];
+
+  const ex = cx * expand;
+  const ey = cy * expand;
+  const ez = cz * expand;
+
+  mid.positions[i3]     = (1.0 - moveFactor) * ex + moveFactor * sx;
+  mid.positions[i3 + 1] = (1.0 - moveFactor) * ey + moveFactor * sy;
+  mid.positions[i3 + 2] = (1.0 - moveFactor) * ez + moveFactor * sz;
+
+  mid.colors[i3]     = mid.gCols[i3]     + (mid.sCols[i3]     - mid.gCols[i3])     * mp;
+  mid.colors[i3 + 1] = mid.gCols[i3 + 1] + (mid.sCols[i3 + 1] - mid.gCols[i3 + 1]) * mp;
+  mid.colors[i3 + 2] = mid.gCols[i3 + 2] + (mid.sCols[i3 + 2] - mid.gCols[i3 + 2]) * mp;
+}
+mid.geom.attributes.position.needsUpdate = true;
+mid.geom.attributes.color.needsUpdate = true;
 
       // 动态调整粒子大小和辉光
       const sizeMul = isMobile ? 0.65 : 1.0;
